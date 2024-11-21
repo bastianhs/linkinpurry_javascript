@@ -1,5 +1,6 @@
 import express from "express";
 import router from "./Router/router.js";
+// import client from "./database/db_connector.js";
 const app = express();
 const PORT = process.env.PORT || 4001;
 // Middleware
