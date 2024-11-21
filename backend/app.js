@@ -1,6 +1,6 @@
 import express from "express";
 import router from "./Router/router.js";
-// import client from "./database/db_connector.js";
+import client from "./database/db_connector.js";
 const app = express();
 const PORT = process.env.PORT || 4001;
 // Middleware
@@ -11,6 +11,8 @@ app.listen(PORT, () => {
 // Routes
 app.use('/', router);  // Use the single API router for all /api routes
 
+const rows = await client.query('SELECT * FROM users');
+console.table(rows.rows);
 // Catch-all for non-existing routes
 
 export default app;
