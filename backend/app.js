@@ -27,6 +27,7 @@ app.listen(PORT, () => {
 //routing
 app.use('/', router); 
 app.use("/api/auth", authRoutes);
+app.use("/api/profile", router)
 
 //error handler route
 app.use(errorHandler);
