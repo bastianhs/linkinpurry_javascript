@@ -18,8 +18,8 @@ async function connectDB() {
     }
   }
 
-connectDB();
+// connectDB();
 
-
-export default client;
+const database = {client,connectDB};
+export default database;
 
