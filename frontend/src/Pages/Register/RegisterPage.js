@@ -1,37 +1,20 @@
-document.addEventListener("DOMContentLoaded", function () {
-	const form = document.getElementById("registerForm");
-	const steps = document.querySelectorAll(".form-step");
-	const progressSteps = document.querySelectorAll(".progress-step");
-	const roleCards = document.querySelectorAll(".role-card");
-	const passwordInput = document.getElementById("password");
-	const confirmPasswordInput = document.getElementById("confirm-password");
-	const togglePasswordBtns = document.querySelectorAll(".toggle-password");
-	const roleInput = document.getElementById("role");
+import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import Snackbar from "../../Components/Snackbar";
 
-	let currentStep = 1;
+const RegisterForm = () => {
+	const [formData, setFormData] = useState({
+		username: "",
+		name: "",
+		email: "",
+		password: "",
+		confirmPassword: "",
+	});
+	const [showPassword, setShowPassword] = useState(false);
+	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
 
-	roleCards.forEach((card) => {
-		card.addEventListener("click", () => {
-			roleCards.forEach((c) => c.classList.remove("selected"));
-			card.classList.add("selected");
-			roleInput.value = card.dataset.role;
-		});
-	});
-	togglePasswordBtns.forEach((btn) => {
-		btn.addEventListener("click", function () {
-			const input = this.previousElementSibling;
-			if (input.type === "password") {
-				input.type = "text";
-				this.classList.remove("fa-eye-slash");
-				this.classList.add("fa-eye");
-			} else {
-				input.type = "password";
-				this.classList.remove("fa-eye");
-				this.classList.add("fa-eye-slash");
-			}
-		});
-	});
-	function validatePassword(password) {
+	const validatePassword = (password) => {
 		const requirements = {
 			length: password.length >= 8,
 			uppercase: /[A-Z]/.test(password),
@@ -39,175 +22,327 @@ document.addEventListener("DOMContentLoaded", function () {
 			number: /[0-9]/.test(password),
 			special: /[!@#$%^&*]/.test(password),
 		};
-		Object.keys(requirements).forEach((req) => {
-			const element = document.getElementById(req);
-			if (element) {
-				if (requirements[req]) {
-					element.classList.add("valid");
-				} else {
-					element.classList.remove("valid");
-				}
-			}
-		});
+		return requirements;
+	};
 
-		return Object.values(requirements).every(Boolean);
-	}
-
-	function validateEmail(email) {
+	const validateEmail = (email) => {
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		return emailRegex.test(email);
-	}
+	};
 
-	function validateStep(step) {
-		switch (step) {
-			case 1:
-				if (!roleInput.value) {
-					showError("Please select a role to continue");
-					return false;
-				}
-				return true;
-			case 2:
-				const email = document.getElementById("email").value;
-				const name = document.getElementById("name").value;
-				const password = passwordInput.value;
-				const confirmPassword = confirmPasswordInput.value;
+	const handleInputChange = (e) => {
+		const { name, value } = e.target;
+		setFormData((prev) => ({ ...prev, [name]: value }));
+	};
 
-				if (!name) {
-					showError("Please enter your name");
-					return false;
-				}
-				if (!validateEmail(email)) {
-					showError("Please enter a valid email address");
-					return false;
-				}
-				if (!validatePassword(password)) {
-					showError("Please ensure your password meets all requirements");
-					return false;
-				}
-				if (password !== confirmPassword) {
-					showError("Passwords do not match");
-					return false;
-				}
-				return true;
-			case 3:
-				if (roleInput.value === "Company") {
-					const location = document.getElementById("companyloc").value;
-					const about = document.getElementById("companyabout").value;
-					if (!location || !about) {
-						showError("Please fill in all company information");
-						return false;
-					}
-				}
-				return true;
-			default:
-				return true;
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+
+		if (!formData.name) {
+			alert("Please enter your name");
+			return;
 		}
-	}
-
-	function showError(message) {
-		alert(message);
-	}
-
-	function goToStep(step) {
-		if (validateStep(currentStep)) {
-			steps.forEach((s) => s.classList.remove("active"));
-			progressSteps.forEach((p) => {
-				p.classList.remove("active");
-				p.classList.remove("completed");
-			});
-			steps[step - 1].classList.add("active");
-			for (let i = 0; i < step; i++) {
-				progressSteps[i].classList.add("completed");
-			}
-			progressSteps[step - 1].classList.add("active");
-
-			currentStep = step;
-			if (step === 3 && roleInput.value !== "Company") {
-				submitForm();
-			}
+		if (!validateEmail(formData.email)) {
+			alert("Please enter a valid email address");
+			return;
 		}
-	}
-
-	document.querySelectorAll(".btn-next").forEach((button) => {
-		button.addEventListener("click", () => {
-			goToStep(currentStep + 1);
-		});
-	});
-
-	document.querySelectorAll(".btn-prev").forEach((button) => {
-		button.addEventListener("click", () => {
-			goToStep(currentStep - 1);
-		});
-	});
-	function submitForm() {
-		if (!validateStep(currentStep)) {
+		if (!Object.values(validatePassword(formData.password)).every(Boolean)) {
+			alert("Please ensure your password meets all requirements");
+			return;
+		}
+		if (formData.password !== formData.confirmPassword) {
+			alert("Passwords do not match");
 			return;
 		}
 
-		const formData = {
-			email: document.getElementById("email").value,
-			password: passwordInput.value,
-			role: roleInput.value,
-			nama: document.getElementById("name").value,
-		};
-
-		if (roleInput.value === "Company") {
-			formData.location = document.getElementById("companyloc").value;
-			formData.about = document.getElementById("companyabout").value;
-		}
-
-		const xhr = new XMLHttpRequest();
-		const url =
-			roleInput.value === "Company"
-				? "http://localhost:8000/api/company-register"
-				: "http://localhost:8000/api/register";
-
-		xhr.open("POST", url, true);
-		xhr.setRequestHeader("Content-Type", "application/json");
-
-		xhr.onreadystatechange = function () {
-			if (xhr.readyState === XMLHttpRequest.DONE) {
-				const response = JSON.parse(xhr.responseText);
-				if (xhr.status === 201) {
-					alert(response.message || "Registration successful!");
-					window.location.href = "http://localhost:8000/login";
-				} else {
-					showError(response.error || "Registration failed. Please try again.");
-				}
-			}
-		};
-
-		xhr.onerror = function () {
-			showError("Network error occurred. Please try again.");
-		};
-
 		try {
-			xhr.send(JSON.stringify(formData));
+			const response = await fetch("http://localhost:4001/api/auth/register", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					username: formData.username,
+					email: formData.email,
+					name: formData.name,
+					password: formData.password,
+				}),
+			});
+
+			const data = await response.json();
+
+			if (data.success) {
+                setSnackbarMessage(
+					data.message || "Registration successful"
+				);
+			} else {
+				setSnackbarMessage(
+					data.message || "Registration failed. Please try again."
+				);
+			}
 		} catch (error) {
-			showError("Error sending data. Please try again.");
+            console.log(error)
+			setSnackbarMessage("Network error occurred. Please try again.");
 		}
-	}
+	};
 
-	form.addEventListener("submit", function (event) {
-		event.preventDefault();
-		submitForm();
-	});
+	const passwordRequirements = validatePassword(formData.password);
 
-	passwordInput.addEventListener("input", () => {
-		validatePassword(passwordInput.value);
-	});
+	const styles = {
+		container: {
+			minHeight: "100vh",
+			display: "flex",
+			alignItems: "center",
+			justifyContent: "center",
+			background: "linear-gradient(to bottom right, #f3f4f6, #e0f2fe)",
+			padding: "1rem",
+		},
+		formCard: {
+			backgroundColor: "white",
+			borderRadius: "1rem",
+			boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+			width: "100%",
+			maxWidth: "32rem",
+		},
+		header: {
+			background: "#2563eb",
+			color: "white",
+			padding: "2rem",
+			textAlign: "center",
+			borderTopLeftRadius: "1rem",
+			borderTopRightRadius: "1rem",
+		},
+		form: {
+			padding: "2rem",
+		},
+		formGroup: {
+			marginBottom: "1.5rem",
+		},
+		label: {
+			display: "block",
+			marginBottom: "0.5rem",
+			fontWeight: "500",
+			color: "#374151",
+		},
+		input: {
+			width: "100%",
+			padding: "0.75rem 1rem",
+			borderRadius: "0.5rem",
+			border: "1px solid #d1d5db",
+			outline: "none",
+		},
+		inputContainer: {
+			position: "relative",
+		},
+		eyeButton: {
+			position: "absolute",
+			right: "0.75rem",
+			top: "50%",
+			transform: "translateY(-50%)",
+			background: "none",
+			border: "none",
+			cursor: "pointer",
+			color: "#6b7280",
+		},
+		requirementsList: {
+			backgroundColor: "#f9fafb",
+			padding: "1rem",
+			borderRadius: "0.5rem",
+			marginTop: "0.75rem",
+		},
+		requirement: {
+			display: "flex",
+			alignItems: "center",
+			gap: "0.5rem",
+			marginBottom: "0.25rem",
+			fontSize: "0.875rem",
+		},
+		submitButton: {
+			width: "100%",
+			padding: "0.75rem 1rem",
+			backgroundColor: "#2563eb",
+			color: "white",
+			border: "none",
+			borderRadius: "0.5rem",
+			fontWeight: "500",
+			cursor: "pointer",
+		},
+		footer: {
+			textAlign: "center",
+			padding: "1.5rem",
+			borderTop: "1px solid #e5e7eb",
+		},
+		link: {
+			color: "#2563eb",
+			textDecoration: "none",
+			fontWeight: "500",
+		},
+	};
 
-	confirmPasswordInput.addEventListener("input", validateConfirmPassword);
-	passwordInput.addEventListener("input", validateConfirmPassword);
+	return (
+		<div style={styles.container}>
+			<div style={styles.formCard}>
+				<div style={styles.header}>
+					<h1
+						style={{
+							fontSize: "1.5rem",
+							fontWeight: "bold",
+							marginBottom: "0.5rem",
+						}}
+					>
+						Create your account
+					</h1>
+					<p style={{ opacity: 0.9 }}>Join the professional community</p>
+				</div>
 
-	function validateConfirmPassword() {
-		if (passwordInput.value !== confirmPasswordInput.value) {
-			confirmPasswordInput.setCustomValidity("Passwords don't match");
-		} else {
-			confirmPasswordInput.setCustomValidity("");
-		}
-	}
+				<form onSubmit={handleSubmit} style={styles.form}>
+					<div style={styles.formGroup}>
+						<label htmlFor="name" style={styles.label}>
+							Full Name
+						</label>
+						<input
+							type="text"
+							id="name"
+							name="name"
+							value={formData.name}
+							onChange={handleInputChange}
+							style={styles.input}
+							required
+						/>
+					</div>
+					<div style={styles.formGroup}>
+						<label htmlFor="name" style={styles.label}>
+							Username
+						</label>
+						<input
+							type="text"
+							id="username"
+							name="username"
+							value={formData.username}
+							onChange={handleInputChange}
+							style={styles.input}
+							required
+						/>
+					</div>
 
-	// Initialize first step
-	goToStep(1);
-});
+					<div style={styles.formGroup}>
+						<label htmlFor="email" style={styles.label}>
+							Email
+						</label>
+						<input
+							type="email"
+							id="email"
+							name="email"
+							value={formData.email}
+							onChange={handleInputChange}
+							style={styles.input}
+							required
+						/>
+					</div>
+
+					<div style={styles.formGroup}>
+						<label htmlFor="password" style={styles.label}>
+							Password
+						</label>
+						<div style={styles.inputContainer}>
+							<input
+								type={showPassword ? "text" : "password"}
+								id="password"
+								name="password"
+								value={formData.password}
+								onChange={handleInputChange}
+								style={styles.input}
+								required
+							/>
+							<button
+								type="button"
+								onClick={() => setShowPassword(!showPassword)}
+								style={styles.eyeButton}
+							>
+								{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+							</button>
+						</div>
+						<div style={styles.requirementsList}>
+							<p
+								style={{
+									marginBottom: "0.5rem",
+									color: "#4b5563",
+									fontSize: "0.875rem",
+								}}
+							>
+								Password must contain:
+							</p>
+							{Object.entries(passwordRequirements).map(
+								([requirement, isValid]) => (
+									<div
+										key={requirement}
+										style={{
+											...styles.requirement,
+											color: isValid ? "#059669" : "#4b5563",
+										}}
+									>
+										<span>{isValid ? "✓" : "×"}</span>
+										<span>
+											{requirement === "length"
+												? "8+ characters"
+												: requirement === "uppercase"
+												? "One uppercase letter"
+												: requirement === "lowercase"
+												? "One lowercase letter"
+												: requirement === "number"
+												? "One number"
+												: "One special character"}
+										</span>
+									</div>
+								)
+							)}
+						</div>
+					</div>
+
+					<div style={styles.formGroup}>
+						<label htmlFor="confirmPassword" style={styles.label}>
+							Confirm Password
+						</label>
+						<div style={styles.inputContainer}>
+							<input
+								type={showConfirmPassword ? "text" : "password"}
+								id="confirmPassword"
+								name="confirmPassword"
+								value={formData.confirmPassword}
+								onChange={handleInputChange}
+								style={styles.input}
+								required
+							/>
+							<button
+								type="button"
+								onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+								style={styles.eyeButton}
+							>
+								{showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+							</button>
+						</div>
+					</div>
+
+					<button type="submit" style={styles.submitButton}>
+						Complete Registration
+					</button>
+				</form>
+
+				<div style={styles.footer}>
+					Already have an account?{" "}
+					<a href="http://localhost:3000/login" style={styles.link}>
+						Sign in
+					</a>
+				</div>
+			</div>
+			{snackbarMessage && (
+				<Snackbar
+					message={snackbarMessage}
+					onClose={() => setSnackbarMessage("")}
+				/>
+			)}
+		</div>
+	);
+};
+
+export default RegisterForm;

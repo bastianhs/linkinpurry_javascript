@@ -5,6 +5,7 @@ import errorHandler from "./Middleware/errorHandler.js";
 import cookieParser from "cookie-parser";
 import authRoutes from "./Router/authRoutes.js";
 import dotenv from "dotenv";
+import cors from "cors";
 
 dotenv.config();
 
@@ -12,6 +13,12 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4001;
+
+app.use(cors({
+  origin: 'http://localhost:3000', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
 
 //connect database
 database.connectDB();
