@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 
 const users = [
 	{ id: 1, username: "john_doe", email: "john@example.com", password: bcrypt.hashSync("password123", 10), role: "job_seeker" }
-];
+];//dummy model
 
 const login = async (req, res) => {
 	const { identifier, password } = req.body;
@@ -14,6 +14,7 @@ const login = async (req, res) => {
 			error: "Missing identifier or password in the request body.",
 		});
 	}
+    //dummy model algrithm
 	const user = users.find(
 		(u) => u.email === identifier || u.username === identifier
 	);
