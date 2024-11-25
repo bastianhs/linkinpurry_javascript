@@ -15,7 +15,7 @@ const router = express.Router();
 // Get profile by username
 router.get("/", async (req, res) => {
   try {
-    const { username } = req.body;
+    const { username } = req.query; //get parameter called username
     const profile = await getProfile(username);
 
     if (!profile.length) {
@@ -24,11 +24,13 @@ router.get("/", async (req, res) => {
 
     console.table(profile);
     res.json(profile);
+
   } catch (error) {
     console.error("Profile fetch error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 // Create a new profile
 router.post("/", async (req, res) => {

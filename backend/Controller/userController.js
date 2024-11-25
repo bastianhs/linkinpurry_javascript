@@ -3,7 +3,7 @@ import database from "../database/db_connector.js";
 const {client} = database;
 export async function getProfile(username) {
     try {
-        const query = 'SELECT * FROM users WHERE username = $1';
+        const query = 'SELECT username, email, created_at, updated_at FROM users WHERE username = $1';
         const values = [username];
         const result = await client.query(query, values);
         return result.rows;
