@@ -1,6 +1,8 @@
 import bcrypt from "bcrypt";
 import database from "../database/db_connector.js";
+
 const {client} = database;
+
 export async function getProfile(username) {
     try {
         const query = 'SELECT username, email, created_at, updated_at FROM users WHERE username = $1';
@@ -35,5 +37,23 @@ export async function updateProfile(username, email, password) {
         return result.rows;
     } catch (error) {
         throw new Error(`Failed to update profile: ${error.message}`);
+    }
+}
+
+export async function getUsers(keyword) {
+    try {
+        if (keyword === undefined) {
+            const query = 'SELECT username FROM users'; // later add profile_photo_path
+            const result = await client.query(query);
+            return result.rows;
+        }
+
+        const query = 'SELECT username FROM users WHERE username ILIKE $1'; // later add profile_photo_path
+        const values = [`%${keyword}%`];
+        const result = await client.query(query, values);
+        return result.rows;
+
+    } catch (error) {
+        throw new Error(`Failed to get users: ${error.message}`);
     }
 }
