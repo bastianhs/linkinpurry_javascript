@@ -152,7 +152,7 @@ const register = async (req, res) => {
 			error: "Password not included numeric.",
 		});
 	}
-	if (!/[!@#$%^&*]/.test(password)) {
+	if (/[!@#$%^&*]/.test(password)) {
 		return res.status(400).json({
 			success: false,
 			message: "Password must include at least 1 special character.",
