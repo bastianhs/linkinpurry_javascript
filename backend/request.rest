@@ -8,3 +8,14 @@ content-type: application/json
     "identifier": "john_doe",
     "password": "password123"
 }
+
+###
+POST http://localhost:4001/api/auth/register HTTP/1.1
+content-type: application/json
+
+{
+    "username": "john_daaoe",
+    "email":"test@gmazial.com",
+    "name":"Budi",
+    "password": "@Wbd1234"
+}

@@ -1,16 +1,23 @@
 import prisma from "../database/prismaClient.js";
 
-export const getUsers = async () => {
+const getUsers = async () => {
 	return await prisma.users.findMany();
 };
 
-export const getUser = async (id) => {
+const getUser = async (id) => {
 	return await prisma.users.findUnique({
-		where: { id: 1 },
+		where: { id: id },
+	});
+};
+const getUserByEmailOrUsername = async (email, username) => {
+	return await prisma.users.findFirst({
+		where: {
+			OR: [{ email: email }, { username: username }],
+		},
 	});
 };
 
-export const createUser = async (username, email, full_name, password_hash) => {
+const createUser = async (username, email, full_name, password_hash) => {
 	const profile_photo_path = "";
 	return await prisma.users.create({
 		data: {
@@ -25,18 +32,25 @@ export const createUser = async (username, email, full_name, password_hash) => {
 	});
 };
 
-export const updateUser = async (id, data) => {
+const updateUser = async (id, data) => {
 	return await prisma.users.update({
 		where: { id },
 		data: { ...data, updated_at: new Date() },
 	});
 };
 
-export const deleteUser = async (id) => {
+const deleteUser = async (id) => {
 	return await prisma.users.delete({
 		where: { id },
 	});
 };
 
-const userModel = { getUser, getUsers, createUser, updateUser, deleteUser };
+const userModel = {
+	getUser,
+	getUsers,
+	createUser,
+	updateUser,
+	deleteUser,
+	getUserByEmailOrUsername,
+};
 export default userModel;
