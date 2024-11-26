@@ -11,17 +11,18 @@ const createDummyPayload = req => {
 }
 
 const createConnectionRequest = async (req, res) => {
-    req = createDummyPayload(req);
-    const fromId = req.user.userId;
-    const toId = req.body.toId;
-
     try {
+        req = createDummyPayload(req);
+        const fromId = req.user.userId;
+        const toId = req.body.toId;
+
         let query = `
-            SELECT
+            SELECT *
             FROM connection_request
-            WHERE from_id = $1 AND to_id = $2
+            WHERE (from_id = $1 AND to_id = $2)
+                OR (from_id = $2 AND to_id = $1)
         ;`;
-        let values = [toId, fromId];
+        let values = [fromId, toId];
         let result = await client.query(query, values);
 
         if (result.rowCount) {
@@ -42,7 +43,7 @@ const createConnectionRequest = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: `"Connection request sent."`
+            message: "Create connection request successful."
         });
 
     } catch (error) {
@@ -54,10 +55,10 @@ const createConnectionRequest = async (req, res) => {
 }
 
 const getConnectionRequests = async(req, res) => {
-    req = createDummyPayload(req);
-    const toId = req.user.userId;
-
     try {
+        req = createDummyPayload(req);
+        const toId = req.user.userId;
+
         const query = `
             SELECT id, username, connection_request.created_at
             FROM connection_request
@@ -71,7 +72,7 @@ const getConnectionRequests = async(req, res) => {
         res.status(200).json({
             success: true,
             message: "Get connection requests successful",
-            data: result
+            data: result.rows
         });
 
     } catch (error) {
@@ -88,15 +89,15 @@ const respondToConnectionRequest = (req, res, next) => {
     } else {
         next = declineConnectionRequest;
     }
-    next();
+    next(req, res);
 }
 
 const acceptConnectionRequest = async (req, res) => {
-    req = createDummyPayload(req);
-    const fromId = req.body.fromId;
-    const toId = req.user.userId;
-    
     try {
+        req = createDummyPayload(req);
+        const fromId = req.body.fromId;
+        const toId = req.user.userId;
+    
         let query = `
             DELETE
             FROM connection_request
@@ -129,12 +130,11 @@ const acceptConnectionRequest = async (req, res) => {
 
 
 const declineConnectionRequest = async (req, res) => {
-    
-    req = createDummyPayload(req);
-    const fromId = req.body.fromId;
-    const toId = req.user.userId;
-    
     try {
+        req = createDummyPayload(req);
+        const fromId = req.body.fromId;
+        const toId = req.user.userId;
+    
         const query = `
             DELETE
             FROM connection_request
@@ -157,11 +157,9 @@ const declineConnectionRequest = async (req, res) => {
 }
 
 const getConnections = async (req, res) => {
-    
-    req = createDummyPayload(req);
-    const userId = req.params.userId;
-    
     try {
+        const userId = parseInt(req.params.userId);
+    
         const query = `
             SELECT id, username, connection.created_at
             FROM connection
@@ -189,8 +187,8 @@ const getConnections = async (req, res) => {
 const deleteConnection = async (req, res) => {
     
     req = createDummyPayload(req);
-    const fromId = req.params.userId;
-    const toId = req.user.userId;
+    const userId1 = parseInt(req.params.userId);
+    const userId2 = parseInt(req.user.userId);
 
     try {
         const query = `
@@ -200,7 +198,7 @@ const deleteConnection = async (req, res) => {
                 (from_id = $1 AND to_id = $2)
                 OR (from_id = $2 AND to_id = $1);
         `;
-        const values = [fromId, toId];
+        const values = [userId1, userId2];
         await client.query(query, values);
 
         res.status(200).json({
@@ -215,3 +213,11 @@ const deleteConnection = async (req, res) => {
         });
     }
 }
+
+export {
+    createConnectionRequest,
+    getConnectionRequests,
+    respondToConnectionRequest,
+    getConnections,
+    deleteConnection
+};

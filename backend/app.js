@@ -5,6 +5,8 @@ import errorHandler from "./Middleware/errorHandler.js";
 import cookieParser from "cookie-parser";
 import authRoutes from "./Router/authRoutes.js";
 import userRouter from "./Router/userRouter.js"
+import connectionRequestRouter from "./Router/connectionRequestRouter.js"
+import connectionRouter from "./Router/connectionRouter.js"
 import dotenv from "dotenv";
 import cors from "cors";
 
@@ -35,13 +37,12 @@ app.listen(PORT, () => {
 //routing
 app.use('/', router); 
 app.use("/api/auth", authRoutes);
-app.use("/api/profile", router)
-app.use("/api/users", userRouter)
+app.use("/api/profile", router);
+app.use("/api/users", userRouter);
+app.use("/api/connection-requests", connectionRequestRouter);
+app.use("/api/connections", connectionRouter);
 
 //error handler route
 app.use(errorHandler);
-
-// const rows = await database.client.query('SELECT * FROM users');
-// console.table(rows.rows);
 
 export default app;
