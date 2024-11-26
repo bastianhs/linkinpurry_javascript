@@ -2,11 +2,10 @@ import bcrypt from "bcrypt";
 import database from "../database/db_connector.js";
 
 const {client} = database;
-
-export async function getProfile(username) {
+export async function getProfile(id) {
     try {
-        const query = 'SELECT username, email, created_at, updated_at FROM users WHERE username = $1';
-        const values = [username];
+        const query = 'SELECT username, email, created_at, updated_at FROM users WHERE id = $1';
+        const values = [id];
         const result = await client.query(query, values);
         return result.rows;
     } catch (error) {
@@ -27,12 +26,12 @@ export async function createProfile(name, email, password) {
     }
 }
 
-export async function updateProfile(username, email, password) {
+export async function updateProfile(id, username, email, password) {
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         const query =
-        "UPDATE users SET email = $1, password_hash = $2, updated_at = NOW() WHERE username = $3 RETURNING *";
-        const values = [email, hashedPassword, username];
+        "UPDATE users SET email = $1, password_hash = $2, updated_at = NOW(), username = $3 WHERE id = $4 RETURNING *";
+        const values = [email, hashedPassword, username, id];
         const result = await client.query(query, values);
         return result.rows;
     } catch (error) {

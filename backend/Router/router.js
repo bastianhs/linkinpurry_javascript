@@ -13,10 +13,10 @@ const router = express.Router();
 // });
 
 // Get profile by username
-router.get("/", async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
-    const { username } = req.query; //get parameter called username
-    const profile = await getProfile(username);
+    const { id } = req.params; //get parameter called username
+    const profile = await getProfile(id);
 
     if (!profile.length) {
       return res.status(404).json({ error: "Profile not found" });
@@ -47,12 +47,12 @@ router.post("/", async (req, res) => {
 });
 
 // Update an existing profile
-router.put("/:username", async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const { username } = req.params;
+    const { username, email, password } = req.body;
+    const { id } = req.params;
 
-    const updatedProfile = await updateProfile(username, email, password);
+    const updatedProfile = await updateProfile(id, username, email, password);
     res.json(updatedProfile);
   } catch (error) {
     console.error("Profile update error:", error);
