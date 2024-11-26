@@ -1,6 +1,22 @@
 services:
-  # backend:
-  # frontend:
+  backend:
+    build: ./backend
+    ports:
+      - "127.0.0.1:4001:4001"  # Map backend port to host
+    networks:
+      - my-network
+    volumes: 
+      - ./backend:/app
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:3000:3000"  # Map frontend port to host
+    depends_on:
+      - backend  # Ensure backend starts before frontend
+    networks:
+      - my-network
+    volumes:
+      - ./frontend:/app
   db:
     image: postgres:latest
     environment:
@@ -13,6 +29,11 @@ services:
     volumes:
       - ./backend/db:/var/lib/postgresql/data
       - ./db_init/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - my-network
 
   redis:
     image: redis:latest
+networks:
+  my-network:
+    driver: bridge

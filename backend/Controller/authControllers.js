@@ -3,27 +3,27 @@ import jwt from "jsonwebtoken";
 import userModel from "../Model/userModel.js";
 
 const login = async (req, res) => {
-	const { identifier, password } = req.body;
+	const { email, password } = req.body;
 
-	if (!identifier || !password) {
+	if (!email || !password) {
 		return res.status(400).json({
 			success: false,
-			message: "Identifier and password are required.",
-			error: "Missing identifier or password in the request body.",
+			message: "email and password are required.",
+			error: "Missing email or password in the request body.",
 		});
 	}
 
 	try {
 		const user = await userModel.getUserByEmailOrUsername(
-			identifier,
-			identifier
+			email,
+			email
 		);
 
 		if (!user) {
 			return res.status(401).json({
 				success: false,
 				message: "Invalid credentials.",
-				error: "User not found or invalid identifier.",
+				error: "User not found or invalid email.",
 			});
 		}
 
@@ -44,13 +44,14 @@ const login = async (req, res) => {
 		const token = jwt.sign(payload, process.env.JWT_SECRET, {
 			expiresIn: process.env.JWT_EXPIRATION,
 		});
-
-		res
-			.cookie("token", token, {
+		// console.log(token);
+		res.cookie("token", token, {
 				httpOnly: true,
 				maxAge: process.env.JWT_EXPIRATION * 1000,
-			})
-			.json({
+				sameSite: "none",
+			});
+
+		res.json({
 				success: true,
 				message: "Login successful",
 				body: {

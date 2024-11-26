@@ -4,10 +4,10 @@ const { Client } = pkg;
 
 const client = new Client({
   user: 'farid',
-  host: 'localhost',
+  host: 'db',
   database: 'wbd',
   password: 'fjfj',
-  port: 5433,
+  port: 5432,
 });
 
 

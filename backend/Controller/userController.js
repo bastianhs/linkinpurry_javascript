@@ -4,7 +4,7 @@ import database from "../database/db_connector.js";
 const {client} = database;
 export async function getProfile(id) {
     try {
-        const query = 'SELECT username, email, created_at, updated_at FROM users WHERE id = $1';
+        const query = 'SELECT * FROM users WHERE id = $1';
         const values = [id];
         const result = await client.query(query, values);
         return result.rows;

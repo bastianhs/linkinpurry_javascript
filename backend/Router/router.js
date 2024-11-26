@@ -67,12 +67,15 @@ router.get("/:id",profileAuthenticate, async (req, res) => {
         success: true,
         message: "Profile fetched successfully",
         body: {
+          created_at: profileData.created_at || "",
+          updated_at: profileData.updated_at || "",
           username: profileData.username || "",
           name: profileData.name || "",
           work_history: profileData.work_history || "",
           skills: profileData.skills || "",
           connection_count: profileData.connection_count || 0,
           profile_photo: profileData.profile_photo || "",
+          email: profileData.email || "",
         },
       };
       return res.json(responseData);

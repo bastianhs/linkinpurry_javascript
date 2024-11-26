@@ -134,6 +134,8 @@ const LoginPage = () => {
 				setSnackbarMessage(
 					data.message || "Login successful"
 				);
+				localStorage.setItem("jwtToken", data.body.token);
+				
 			} else {
 				setSnackbarMessage(
 					data.message || "Login failed. Please try again."
