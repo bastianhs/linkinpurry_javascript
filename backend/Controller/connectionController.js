@@ -2,18 +2,34 @@ import database from "../database/db_connector.js";
 
 const {client} = database;
 
-export async function createConnectionRequest(from_id, to_id) {
+// dummy payload
+const createDummyPayload = req => {
+    req.user = {
+        userId: 1
+    }
+    return req;
+}
+
+const createConnectionRequest = async (req, res) => {
+    req = createDummyPayload(req);
+    const fromId = req.user.userId;
+    const toId = req.body.toId;
+
     try {
         let query = `
             SELECT
             FROM connection_request
             WHERE from_id = $1 AND to_id = $2
         ;`;
-        let values = [to_id, from_id];
+        let values = [toId, fromId];
         let result = await client.query(query, values);
 
         if (result.rowCount) {
-            throw new Error(`Connection request already sent to you`);
+            res.status(400).json({
+                success: false,
+                message: "Connection request already sent to you"
+            });
+            return;
         }
 
         query = `
@@ -21,15 +37,26 @@ export async function createConnectionRequest(from_id, to_id) {
             INTO connection_request (from_id, to_id, created_at)
             VALUES ($1, $2, NOW())
         ;`;
-        values = [from_id, to_id];
+        values = [fromId, toId];
         await client.query(query, values);
 
+        res.status(200).json({
+            success: true,
+            message: `"Connection request sent."`
+        });
+
     } catch (error) {
-        throw new Error(`Failed to create connection request: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            message: `Failed to create connection request: ${error.message}`
+        });
     }
 }
 
-export async function getConnectionRequests(to_id) {
+const getConnectionRequests = async(req, res) => {
+    req = createDummyPayload(req);
+    const toId = req.user.userId;
+
     try {
         const query = `
             SELECT id, username, connection_request.created_at
@@ -38,23 +65,44 @@ export async function getConnectionRequests(to_id) {
             WHERE connection_request.to_id = $1
             ORDER BY created_at DESC;
         `;
-        const values = [to_id];
+        const values = [toId];
         const result = await client.query(query, values);
-        return result.rows;
+        
+        res.status(200).json({
+            success: true,
+            message: "Get connection requests successful",
+            data: result
+        });
 
     } catch (error) {
-        throw new Error(`Failed to get connection requests: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            message: `Failed to get connection requests: ${error.message}`
+        });
     }
 }
 
-export async function acceptConnectionRequest(from_id, to_id) {
+const respondToConnectionRequest = (req, res, next) => {
+    if (req.body.action === "accept") { // need to handle invalid action
+        next = acceptConnectionRequest;
+    } else {
+        next = declineConnectionRequest;
+    }
+    next();
+}
+
+const acceptConnectionRequest = async (req, res) => {
+    req = createDummyPayload(req);
+    const fromId = req.body.fromId;
+    const toId = req.user.userId;
+    
     try {
         let query = `
             DELETE
             FROM connection_request
             WHERE from_id = $1 AND to_id = $2;
         `;
-        const values = [from_id, to_id]
+        const values = [fromId, toId]
         await client.query(query, values);
         
         query = `
@@ -65,28 +113,54 @@ export async function acceptConnectionRequest(from_id, to_id) {
                 ($2, $1, NOW());
         `;
         await client.query(query, values);
+
+        res.status(200).json({
+            success: true,
+            message: "Accept connection request successful",
+        });
         
     } catch (error) {
-        throw new Error(`Failed to accept connection request: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            message: `Failed to accept connection request: ${error.message}`,
+        });
     }
 }
 
-export async function declineConnectionRequest(from_id, to_id) {
+
+const declineConnectionRequest = async (req, res) => {
+    
+    req = createDummyPayload(req);
+    const fromId = req.body.fromId;
+    const toId = req.user.userId;
+    
     try {
         const query = `
             DELETE
             FROM connection_request
             WHERE from_id = $1 AND to_id = $2;
         `;
-        const values = [from_id, to_id]
+        const values = [fromId, toId]
         await client.query(query, values);
+
+        res.status(200).json({
+            success: true,
+            message: "Decline connection request successful",
+        });
         
     } catch (error) {
-        throw new Error(`Failed to decline connection request: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            message: `Failed to decline connection request: ${error.message}`,
+        });
     }
 }
 
-export async function getConnections(user_id) {
+const getConnections = async (req, res) => {
+    
+    req = createDummyPayload(req);
+    const userId = req.params.userId;
+    
     try {
         const query = `
             SELECT id, username, connection.created_at
@@ -95,16 +169,29 @@ export async function getConnections(user_id) {
             WHERE connection.from_id = $1
             ORDER BY created_at DESC;
         `;
-        const values = [user_id];
+        const values = [userId];
         const result = await client.query(query, values);
-        return result.rows;
+
+        res.status(200).json({
+            success: true,
+            message: "Get connections successful",
+            data: result.rows
+        });
 
     } catch (error) {
-        throw new Error(`Failed to get connections: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            message: `Failed to get connections: ${error.message}`,
+        });
     }
 }
 
-export async function deleteConnection(from_id, to_id) {
+const deleteConnection = async (req, res) => {
+    
+    req = createDummyPayload(req);
+    const fromId = req.params.userId;
+    const toId = req.user.userId;
+
     try {
         const query = `
             DELETE
@@ -113,10 +200,18 @@ export async function deleteConnection(from_id, to_id) {
                 (from_id = $1 AND to_id = $2)
                 OR (from_id = $2 AND to_id = $1);
         `;
-        const values = [from_id, to_id];
+        const values = [fromId, toId];
         await client.query(query, values);
 
+        res.status(200).json({
+            success: true,
+            message: "Delete connection successful",
+        });
+
     } catch (error) {
-        throw new Error(`Failed to delete connection: ${error.message}`);
+        res.status(500).json({
+            success: false,
+            message: `Failed to delete connection: ${error.message}`,
+        });
     }
 }
