@@ -9,7 +9,7 @@ import {
   faEye, 
   faEyeSlash 
 } from "@fortawesome/free-solid-svg-icons";
-// import axios from "axios";
+import axios from "axios";
 
 const UserProfile = () => {
   const [userData, setUserData] = useState(null);
@@ -18,11 +18,12 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const id = 1;
+        const userid = await axios.get('http://localhost:4001/api/profile/me');
+        const id = userid.data.body.userId;
         // console.log('http://localhost:4001/api/profile/'+id);
-        const response = await fetch('http://localhost:4001/api/profile/'+id);
-        const data1 = await response.json();
-        const data = data1[0];
+        // const response = await fetch('http://localhost:4001/api/profile/'+id);
+        const response = await axios.get('http://localhost:4001/api/profile/'+id);
+        const data = response.data.body;
         // console.log(data);
         setUserData({
           username: data.username,

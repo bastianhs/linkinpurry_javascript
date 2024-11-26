@@ -1,7 +1,7 @@
 import RegisterPage from "./Pages/Register/RegisterPage";
 import LoginPage from "./Pages/Login/LoginPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import EditProfile from "./Pages/ProfilePage/profilePage";
+import MyProfile from "./Pages/ProfilePage/profilePage";
 import "./App.css";
 
 function App() {
@@ -10,7 +10,8 @@ function App() {
 			<Routes>
 				<Route path="/register" element={<RegisterPage />} />
 				<Route path="/login" element={<LoginPage />} />
-				<Route path="/profile" element={<EditProfile />} />
+				<Route path="/profile" element={<MyProfile />} />
+				{/* <Route path="/profile/:id" element={<MyProfile />} /> */}
 			</Routes>
 		</Router>
 	);
