@@ -1,4 +1,4 @@
-import prisma from "../prismaClient.js";
+import prisma from "../database/prismaClient.js";
 
 export const getPushSubscriptions = async () => {
 	return await prisma.push_subscriptions.findMany();
@@ -15,3 +15,6 @@ export const deletePushSubscription = async (endpoint) => {
 		where: { endpoint },
 	});
 };
+
+const pushSubscriptionModel = {getPushSubscriptions,createPushSubscription,deletePushSubscription};
+export default pushSubscriptionModel;

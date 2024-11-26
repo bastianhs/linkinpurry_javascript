@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
+import userModel from "../Model/userModel.js"
 const users = [
 	{
 		id: 1,

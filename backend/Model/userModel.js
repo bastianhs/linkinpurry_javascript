@@ -1,4 +1,4 @@
-import prisma from "../prismaClient.js";
+import prisma from "../database/prismaClient.js";
 
 export const getUsers = async () => {
 	return await prisma.users.findMany();
@@ -37,3 +37,6 @@ export const deleteUser = async (id) => {
 		where: { id },
 	});
 };
+
+const userModel = { getUser, getUsers, createUser, updateUser, deleteUser };
+export default userModel;

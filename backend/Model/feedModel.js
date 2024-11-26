@@ -1,24 +1,27 @@
-import prisma from "../prismaClient.js";
+import prisma from "../database/prismaClient.js";
 
-export const getFeeds = async () => {
+const getFeeds = async () => {
 	return await prisma.feed.findMany();
 };
 
-export const createFeed = async (user_id, content) => {
+const createFeed = async (user_id, content) => {
 	return await prisma.feed.create({
 		data: { user_id, content, created_at: new Date(), updated_at: new Date() },
 	});
 };
 
-export const updateFeed = async (id, content) => {
+const updateFeed = async (id, content) => {
 	return await prisma.feed.update({
 		where: { id },
 		data: { content, updated_at: new Date() },
 	});
 };
 
-export const deleteFeed = async (id) => {
+const deleteFeed = async (id) => {
 	return await prisma.feed.delete({
 		where: { id },
 	});
 };
+
+const feedModel = {getFeeds,createFeed,updateFeed,deleteFeed};
+export default feedModel;
