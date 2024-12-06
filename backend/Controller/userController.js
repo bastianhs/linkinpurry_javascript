@@ -1,7 +1,9 @@
 import bcrypt from "bcrypt";
 import database from "../database/db_connector.js";
+import userModel from "../Model/userModel.js";
 
 const {client} = database;
+
 export async function getProfile(id) {
     try {
         const query = 'SELECT * FROM users WHERE id = $1';
@@ -39,20 +41,37 @@ export async function updateProfile(id, username, email, password) {
     }
 }
 
-export async function getUsers(keyword) {
+export async function getUsers(req, res) {
     try {
-        if (keyword === undefined) {
-            const query = 'SELECT username FROM users'; // later add profile_photo_path
-            const result = await client.query(query);
-            return result.rows;
+        const { search } = req.query;
+
+        let users;
+        if (search === undefined) {
+            users = await userModel.getUsers();
+        } else {
+            users = await userModel.getUsersByUsernameSubstring(search);
         }
 
-        const query = 'SELECT username FROM users WHERE username ILIKE $1'; // later add profile_photo_path
-        const values = [`%${keyword}%`];
-        const result = await client.query(query, values);
-        return result.rows;
+        const response = users.map(user => ({
+            id: Number(user.id), // Convert from BigInt
+            username: user.username,
+            profile_photo_path: user.profile_photo_path,
+        }));
+
+        if (!response.length) {
+            return res.status(404).json({
+                errors: "No profiles found"
+            });
+        }
+
+        return res.status(200).json({
+            data: response
+        });
 
     } catch (error) {
-        throw new Error(`Failed to get users: ${error.message}`);
+        // console.error("Error getting users:", error);
+        return res.status(500).json({
+            errors: "Internal server error"
+        });
     }
 }

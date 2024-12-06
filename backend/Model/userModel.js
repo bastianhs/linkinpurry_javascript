@@ -9,12 +9,24 @@ const getUser = async (id) => {
 		where: { id: id },
 	});
 };
+
 const getUserByEmailOrUsername = async (email, username) => {
 	return await prisma.users.findFirst({
 		where: {
 			OR: [{ email: email }, { username: username }],
 		},
 	});
+};
+
+const getUsersByUsernameSubstring = async (substring) => {
+    return await prisma.users.findMany({
+        where: {
+            username: {
+                contains: substring,
+                mode: 'insensitive',
+            },
+        },
+    });
 };
 
 const createUser = async (username, email, full_name, password_hash) => {
@@ -52,5 +64,7 @@ const userModel = {
 	updateUser,
 	deleteUser,
 	getUserByEmailOrUsername,
+	getUsersByUsernameSubstring,
 };
+
 export default userModel;
