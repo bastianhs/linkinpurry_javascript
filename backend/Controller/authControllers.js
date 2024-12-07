@@ -42,7 +42,7 @@ const login = async (req, res) => {
 		};
 
 		const token = jwt.sign(payload, process.env.JWT_SECRET, {
-			expiresIn: process.env.JWT_EXPIRATION,
+			expiresIn: Number(process.env.JWT_EXPIRATION),
 		});
 		// console.log(token);
 		res.cookie("token", token, {
@@ -131,7 +131,7 @@ const register = async (req, res) => {
 		};
 
 		const token = jwt.sign(payload, process.env.JWT_SECRET, {
-			expiresIn: process.env.JWT_EXPIRATION,
+			expiresIn: Number(process.env.JWT_EXPIRATION),
 		});
 
 		res

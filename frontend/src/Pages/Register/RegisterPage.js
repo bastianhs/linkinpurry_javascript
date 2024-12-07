@@ -75,6 +75,8 @@ const RegisterForm = () => {
                 setSnackbarMessage(
 					data.message || "Registration successful"
 				);
+				localStorage.setItem("jwtToken", data.body.token);
+				
 			} else {
 				setSnackbarMessage(
 					data.message || "Registration failed. Please try again."
