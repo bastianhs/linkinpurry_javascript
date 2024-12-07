@@ -15,9 +15,16 @@ function App() {
 				<Route path="/login" element={<LoginPage />} />
 				<Route path="/profile" element={<MyProfile />} />
 				{/* <Route path="/profile/:id" element={<MyProfile />} /> */}
+				
 				{/* <Route path="/users" element={<UsersPage />} />
-				<Route path="/connection-requests" element={<ConnectionRequestsPage />} />
-				<Route path="/connections/:userId" element={<ConnectionsPage />} /> */}
+				<Route path="/connection-requests" element={<ConnectionRequestsPage />} /> */}
+				
+				{/**
+				 * http://localhost:3000/connections/5
+				 * example: http://localhost:3000/connections/5
+				 */}
+				<Route path="/connections/:userId" element={<ConnectionsPage />} />
+
 			</Routes>
 		</Router>
 	);
