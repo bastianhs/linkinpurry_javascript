@@ -4,10 +4,11 @@ import {
     getConnectionRequests,
     respondToConnectionRequest,
 } from "../Controller/connectionController.js";
+import {authenticate} from "../Middleware/authenticate.js";
 
 const router = express();
-router.post("/", createConnectionRequest);
-router.get("/", getConnectionRequests);
-router.put("/", respondToConnectionRequest);
+router.post("/", authenticate, createConnectionRequest);
+router.get("/", authenticate, getConnectionRequests);
+router.put("/", authenticate, respondToConnectionRequest);
 
 export default router;

@@ -13,9 +13,8 @@ const createDummyPayload = req => {
 
 const createConnectionRequest = async (req, res) => {
     try {
-        req = createDummyPayload(req);
-        const fromId = req.user.userId;
-        const toId = req.body.toId;
+        const fromId = Number(req.user.userId);
+        const toId = Number(req.body.toId);
 
         if (fromId === toId) {
             return res.status(400).json({
@@ -45,8 +44,7 @@ const createConnectionRequest = async (req, res) => {
 
 const getConnectionRequests = async(req, res) => {
     try {
-        req = createDummyPayload(req);
-        const toId = req.user.userId;
+        const toId = Number(req.user.userId);
 
         const connectionRequests = await connectionRequestModel.getConnectionRequestsByToId(toId);
         const convertedConnectionRequests = connectionRequests.map(request => ({
@@ -68,9 +66,9 @@ const getConnectionRequests = async(req, res) => {
 
 const respondToConnectionRequest = async (req, res) => {
     try {
-        req = createDummyPayload(req);
-        const toId = req.user.userId;
-        const { fromId, action } = req.body;
+        const toId = Number(req.user.userId);
+        const fromId = Number(req.body.fromId);
+        const action = req.body.action;
 
         let messages;
         if (action === "accept") {
@@ -117,7 +115,7 @@ const declineConnectionRequest = async (fromId, toId) => {
 
 const getConnections = async (req, res) => {
     try {
-        const userId = parseInt(req.params.userId);
+        const userId = Number(req.params.userId);
     
         const connections = await connectionModel.getConnectionsByFromId(userId);
 
@@ -140,9 +138,8 @@ const getConnections = async (req, res) => {
 }
 
 const deleteConnection = async (req, res) => {
-    req = createDummyPayload(req);
-    const userId1 = parseInt(req.user.userId);
-    const userId2 = parseInt(req.params.userId);
+    const userId1 = Number(req.user.userId);
+    const userId2 = Number(req.params.userId);
 
     try {
         await connectionModel.deleteConnection(userId1, userId2);

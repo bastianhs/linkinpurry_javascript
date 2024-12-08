@@ -4,8 +4,11 @@ import {
   createProfile,
   updateProfile,
 } from "../Controller/userController.js";
-import {profileAuthenticate} from "../Middleware/authenticate.js";
-import authenticate from "../Middleware/authenticate.js";
+import {
+  authenticate,
+  profileAuthenticate
+} from "../Middleware/authenticate.js";
+
 const router = express.Router();
 
 // Root route
