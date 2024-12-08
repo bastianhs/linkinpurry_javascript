@@ -6,6 +6,7 @@ import errorHandler from "./Middleware/errorHandler.js";
 import cookieParser from "cookie-parser";
 import authRoutes from "./Router/authRoutes.js";
 import userRouter from "./Router/userRouter.js";
+import uploadRouter from "./Router/uploadRouter.js";
 import connectionRequestRouter from "./Router/connectionRequestRouter.js";
 import connectionRouter from "./Router/connectionRouter.js";
 import chatRouter from "./Router/chatRouter.js";
@@ -14,6 +15,9 @@ import cors from "cors";
 import http from 'http';
 import setupWebSocket from './Config/websocket.js';
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config();
 
 const app = express();
@@ -43,6 +47,9 @@ app.use("/api/connection-requests", connectionRequestRouter);
 app.use("/api/connections", connectionRouter);
 app.use("/api/chats", chatRouter);
 
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/upload', uploadRouter);
 // Error handler
 app.use(errorHandler);
 

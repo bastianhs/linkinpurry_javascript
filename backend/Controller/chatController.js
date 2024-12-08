@@ -10,7 +10,7 @@ const formatUser = (user) => ({
 const getChatsByUser = async (req, res) => {
 	try {
 		const userId = BigInt(req.user.userId);
-		console.log("UserId (BigInt):", userId.toString());
+		// console.log("UserId (BigInt):", userId.toString());
 
 		// Simplified query
 		const chats = await prisma.chat.findMany({
@@ -134,7 +134,7 @@ const createChat = async (req, res) => {
 				users_chat_to_idTousers: true,
 			},
 		});
-		console.log(existingChat);
+		// console.log(existingChat);
 
 		// Create new chat
 		const newChat = await prisma.chat.create({

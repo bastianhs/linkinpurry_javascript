@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import database from "../database/db_connector.js";
 import userModel from "../Model/userModel.js";
+import { upload, processImage } from "../Util/imageHandler.js";
 
 const { client } = database;
 
@@ -64,11 +65,11 @@ export async function getUsers(req, res) {
 			users = await userModel.getUsersByUsernameSubstring(search);
 		}
 
-        const response = users.map(user => ({
-            id: Number(user.id),
-            username: user.username,
-            profile_photo_path: user.profile_photo_path,
-        }));
+		const response = users.map((user) => ({
+			id: Number(user.id),
+			username: user.username,
+			profile_photo_path: user.profile_photo_path,
+		}));
 
 		if (!response.length) {
 			return res.status(404).json({
@@ -76,13 +77,39 @@ export async function getUsers(req, res) {
 			});
 		}
 
-        return res.status(200).json({
-            data: response
-        });
-
-    } catch (error) {
-        return res.status(500).json({
-            errors: "Internal server error"
-        });
-    }
+		return res.status(200).json({
+			data: response,
+		});
+	} catch (error) {
+		return res.status(500).json({
+			errors: "Internal server error",
+		});
+	}
 }
+export const updateProfileImage = async (req, res) => {
+	try {
+		upload.single("image")(req, res, async (err) => {
+			if (err) {
+				return res.status(400).json({ error: err.message });
+			}
+
+			const userId  = req.user.userId;
+			const updates = { ...req.body };
+
+			if (req.file) {
+				const filename = `${userId}_${Date.now()}.jpg`;
+				await processImage(req.file.buffer, filename);
+				updates.profile_photo_path = `/uploads/profiles/medium_${filename}`;
+			}
+
+			const user = await prisma.users.update({
+				where: { id: userId },
+				data: updates,
+			});
+
+			res.json({ success: true, user });
+		});
+	} catch (error) {
+		res.status(500).json({ error: "Failed to update profile" });
+	}
+};

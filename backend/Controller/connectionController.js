@@ -200,8 +200,8 @@ const getUserConnection = async (req, res) => {
     try {
         const userId = req.user.userId;
         
-        console.log("AAAAA");
-        console.log(userId);
+        // console.log("AAAAA");
+        // console.log(userId);
         const connections = await connectionModel.getUserConnections(userId);
 
         if (connections.length === 0) {

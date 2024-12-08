@@ -59,7 +59,7 @@ const ChatList = ({ chats, activeChat, onSelectChat, user }) => {
 			textOverflow: "ellipsis",
 		},
 	};
-    console.log(chats);
+    // console.log(chats);
 	const groupedChats = chats.reduce((acc, chat) => {
         // console.log(chat);
         const partnerId = chat.otherUser.id;
