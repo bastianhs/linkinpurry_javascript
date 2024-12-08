@@ -4,7 +4,6 @@ import { faEyeSlash, faEye } from "@fortawesome/free-solid-svg-icons";
 import Snackbar from "../../Components/Snackbar";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../Context/authContext';
-import api from '../../Utils/api';
 
 const styles = {
 	container: {

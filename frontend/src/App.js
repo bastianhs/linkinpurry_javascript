@@ -9,6 +9,7 @@ import "./App.css";
 import { AuthProvider } from "./Context/authContext";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import ChatPage from "./Pages/Chat/ChatPage";
+import NotFoundPage from "./Pages/NotFound/NotFoundPage";
 
 function App() {
 	return (
@@ -70,6 +71,8 @@ function App() {
 						}
 					/>
 					<Route path="/" element={<LoginPage />} />
+					{/* 404 Route */}
+					<Route path="*" element={<NotFoundPage />} />
 				</Routes>
 			</Router>
 		</AuthProvider>
