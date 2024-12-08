@@ -141,7 +141,29 @@ const getConnections = async (req, res) => {
         });
     }
 }
+const getConnection = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        // console.log(userId);
+        const connections = await connectionModel.getConnectionsByFromId(userId);
 
+        if (connections.length === 0) {
+            return res.status(404).json({
+                errors: "No connections found",
+            });
+        }
+
+        res.status(200).json({
+            data: connections
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            errors: "Failed to get connections",
+        });
+    }
+}
 const deleteConnection = async (req, res) => {
     const userId1 = Number(req.user.userId);
     const userId2 = Number(req.params.userId);
@@ -174,6 +196,31 @@ const deleteConnection = async (req, res) => {
 //     }
 //     return req;
 // }
+const getUserConnection = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        
+        console.log("AAAAA");
+        console.log(userId);
+        const connections = await connectionModel.getUserConnections(userId);
+
+        if (connections.length === 0) {
+            return res.status(404).json({
+                errors: "No connections found",
+            });
+        }
+
+        res.status(200).json({
+            data: connections
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            errors: "Failed to get connections",
+        });
+    }
+}
 
 export {
     createConnectionRequest,
@@ -181,4 +228,6 @@ export {
     respondToConnectionRequest,
     getConnections,
     deleteConnection,
+    getConnection,
+    getUserConnection,
 };

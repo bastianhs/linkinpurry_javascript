@@ -14,10 +14,7 @@ const login = async (req, res) => {
 	}
 
 	try {
-		const user = await userModel.getUserByEmailOrUsername(
-			email,
-			email
-		);
+		const user = await userModel.getUserByEmailOrUsername(email, email);
 
 		if (!user) {
 			return res.status(401).json({
@@ -46,18 +43,20 @@ const login = async (req, res) => {
 		});
 		// console.log(token);
 		res.cookie("token", token, {
-				httpOnly: true,
-				maxAge: process.env.JWT_EXPIRATION * 1000,
-				sameSite: "none",
-			});
+			httpOnly: true,
+			maxAge: process.env.JWT_EXPIRATION * 1000,
+			sameSite: "lax",
+			path: "/",
+			domain: "localhost",
+		});
 
 		res.json({
-				success: true,
-				message: "Login successful",
-				body: {
-					token,
-				},
-			});
+			success: true,
+			message: "Login successful",
+			body: {
+				token,
+			},
+		});
 	} catch (err) {
 		console.error(err);
 		res.status(500).json({
@@ -85,6 +84,14 @@ const register = async (req, res) => {
 			success: false,
 			message: "Invalid email format.",
 			error: "The email does not match the expected format.",
+		});
+	}
+
+	if (emailRegex.test(username)) {
+		return res.status(400).json({
+			success: false,
+			message: "Invalid username format.",
+			error: "The username must not look like an email.",
 		});
 	}
 
@@ -138,6 +145,9 @@ const register = async (req, res) => {
 			.cookie("token", token, {
 				httpOnly: true,
 				maxAge: process.env.JWT_EXPIRATION * 1000,
+				sameSite: "lax",
+				path: "/",
+				domain: "localhost",
 			})
 			.status(201)
 			.json({
@@ -163,5 +173,27 @@ const register = async (req, res) => {
 	}
 };
 
-const authentication = { login, register };
+const logout = async (req, res) => {
+	try {
+		// clear the token cookie
+		res.clearCookie("token", {
+			httpOnly: true,
+			sameSite: "none",
+			secure: process.env.NODE_ENV === "production",
+		});
+
+		return res.status(200).json({
+			success: true,
+			message: "Logged out successfully",
+		});
+	} catch (error) {
+		console.error("Logout error:", error);
+		return res.status(500).json({
+			success: false,
+			message: "Error during logout",
+			error: error.message,
+		});
+	}
+};
+const authentication = { login, register, logout };
 export default authentication;

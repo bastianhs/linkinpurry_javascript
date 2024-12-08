@@ -1,8 +1,12 @@
 import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import Snackbar from "../../Components/Snackbar";
+import { useAuth } from '../../Context/authContext';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterForm = () => {
+    const { login } = useAuth();
+    const navigate = useNavigate();
 	const [formData, setFormData] = useState({
 		username: "",
 		name: "",
@@ -58,6 +62,7 @@ const RegisterForm = () => {
 		try {
 			const response = await fetch("http://localhost:4001/api/auth/register", {
 				method: "POST",
+                credentials: 'include',
 				headers: {
 					"Content-Type": "application/json",
 				},
@@ -72,11 +77,11 @@ const RegisterForm = () => {
 			const data = await response.json();
 
 			if (data.success) {
+                login(); 
                 setSnackbarMessage(
 					data.message || "Registration successful"
 				);
-				localStorage.setItem("jwtToken", data.body.token);
-				
+				navigate('/dashboard');
 			} else {
 				setSnackbarMessage(
 					data.message || "Registration failed. Please try again."

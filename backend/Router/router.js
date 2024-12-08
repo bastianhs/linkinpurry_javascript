@@ -33,6 +33,15 @@ router.get("/me", authenticate, async (req, res) => {
 router.get("/:id",profileAuthenticate, async (req, res) => {
   try {
     const { id } = req.params; // get parameter called id
+    
+    if (!id || isNaN(id)) {
+      return res.status(400).json({
+          success: false,
+          message: "Invalid user ID format",
+          body: null
+      });
+  }
+
     const profile = await getProfile(id);
     const loggedId = req.user?.userId || null;
     if (!profile.length) {

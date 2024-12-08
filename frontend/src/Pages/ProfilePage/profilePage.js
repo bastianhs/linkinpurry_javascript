@@ -14,7 +14,7 @@ import {
   faCamera,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import api from "../../api";
+import api from "../../Utils/api";
 
 const UserProfile = () => {
   const [userData, setUserData] = useState(null);

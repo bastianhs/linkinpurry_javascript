@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEyeSlash, faEye } from "@fortawesome/free-solid-svg-icons";
 import Snackbar from "../../Components/Snackbar";
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../Context/authContext';
+import api from '../../Utils/api';
 
 const styles = {
 	container: {
@@ -38,32 +41,44 @@ const styles = {
 	},
 	input: {
 		width: "100%",
-		padding: "14px 12px 2px",
+		padding: "16px 12px",
 		border: "1px solid rgba(0, 0, 0, 0.6)",
 		borderRadius: "4px",
 		fontSize: "16px",
 		outline: "none",
-		transition: "all 0.3s ease",
+		transition: "border-color 0.3s ease",
+		height: "56px", 
 	},
 	inputFocused: {
 		borderColor: "#0a66c2",
-		paddingTop: "20px",
-		paddingBottom: "8px",
 	},
+
 	label: {
 		position: "absolute",
-		top: "50%",
+		top: "16px", 
 		left: "12px",
-		transform: "translateY(-50%)",
 		fontSize: "16px",
 		color: "rgba(0, 0, 0, 0.6)",
 		pointerEvents: "none",
 		transition: "all 0.3s ease",
+		backgroundColor: "#ffffff",
+		padding: "0 4px",
 	},
+
 	labelFocused: {
-		top: "8px",
+		top: "-8px",
 		fontSize: "12px",
 		color: "#0a66c2",
+	},
+
+	passwordToggle: {
+		position: "absolute",
+		right: "12px",
+		top: "50%",
+		transform: "translateY(-50%)",
+		cursor: "pointer",
+		color: "#666",
+		zIndex: 1,
 	},
 	button: {
 		width: "100%",
@@ -91,17 +106,11 @@ const styles = {
 		fontWeight: "600",
 		textDecoration: "none",
 	},
-	passwordToggle: {
-		position: "absolute",
-		right: "10px",
-		top: "50%",
-		transform: "translateY(-50%)",
-		cursor: "pointer",
-		color: "#666",
-	},
 };
 
 const LoginPage = () => {
+    const { login } = useAuth();
+    const navigate = useNavigate();
 	const [showPassword, setShowPassword] = useState(false);
 	const [formData, setFormData] = useState({
 		email: "",
@@ -111,7 +120,7 @@ const LoginPage = () => {
 		email: false,
 		password: false,
 	});
-    const [snackbarMessage, setSnackbarMessage] = useState("");
+	const [snackbarMessage, setSnackbarMessage] = useState("");
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -124,6 +133,7 @@ const LoginPage = () => {
 		try {
 			const response = await fetch("http://localhost:4001/api/auth/login", {
 				method: "POST",
+                credentials: 'include',
 				headers: {
 					"Content-Type": "application/json",
 				},
@@ -131,15 +141,12 @@ const LoginPage = () => {
 			});
 			const data = await response.json();
 			if (data.success) {
-				setSnackbarMessage(
-					data.message || "Login successful"
-				);
-				localStorage.setItem("jwtToken", data.body.token);
-				
+                console.log(data.body.token);
+                login();
+				setSnackbarMessage(data.message || "Login successful");
+                navigate('/dashboard');
 			} else {
-				setSnackbarMessage(
-					data.message || "Login failed. Please try again."
-				);
+				setSnackbarMessage(data.message || "Login failed. Please try again.");
 			}
 		} catch (error) {
 			setSnackbarMessage("Network error occurred. Please try again.");
@@ -249,7 +256,7 @@ const LoginPage = () => {
 					</a>
 				</div>
 			</div>
-            {snackbarMessage && (
+			{snackbarMessage && (
 				<Snackbar
 					message={snackbarMessage}
 					onClose={() => setSnackbarMessage("")}

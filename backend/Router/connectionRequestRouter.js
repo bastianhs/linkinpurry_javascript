@@ -11,4 +11,9 @@ router.post("/", authenticate, createConnectionRequest);
 router.get("/", authenticate, getConnectionRequests);
 router.put("/", authenticate, respondToConnectionRequest);
 
+// Protected routes
+router.post("/", authenticate, createConnectionRequest);
+router.get("/", authenticate, getConnectionRequests);
+router.put("/", authenticate, respondToConnectionRequest);
+
 export default router;

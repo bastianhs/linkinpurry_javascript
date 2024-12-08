@@ -6,21 +6,73 @@ import UsersPage from "./Pages/Connection/UsersPage";
 import ConnectionRequestsPage from "./Pages/Connection/ConnectionRequestsPage";
 import ConnectionsPage from "./Pages/Connection/ConnectionsPage";
 import "./App.css";
+import { AuthProvider } from "./Context/authContext";
+import ProtectedRoute from "./Components/ProtectedRoute";
+import ChatPage from "./Pages/Chat/ChatPage";
 
 function App() {
 	return (
-		<Router>
-			<Routes>
-				<Route path="/register" element={<RegisterPage />} />
-				<Route path="/login" element={<LoginPage />} />
-				<Route path="/profile" element={<MyProfile />} />
-				{/* <Route path="/profile/:id" element={<MyProfile />} /> */}
-				
-				<Route path="/users" element={<UsersPage />} />
-				<Route path="/connection-requests" element={<ConnectionRequestsPage />} />
-				<Route path="/connections/:userId" element={<ConnectionsPage />} />
-			</Routes>
-		</Router>
+		<AuthProvider>
+			<Router>
+				<Routes>
+					{/* Public Routes */}
+					<Route path="/register" element={<RegisterPage />} />
+					<Route path="/login" element={<LoginPage />} />
+
+					{/* Protected Routes */}
+					<Route
+						path="/profile"
+						element={
+							<ProtectedRoute>
+								<MyProfile />
+							</ProtectedRoute>
+						}
+					/>
+
+					<Route
+						path="/users"
+						element={
+							<ProtectedRoute>
+								<UsersPage />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/connection-requests"
+						element={
+							<ProtectedRoute>
+								<ConnectionRequestsPage />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/connections/:userId"
+						element={
+							<ProtectedRoute>
+								<ConnectionsPage />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/connections/:userId"
+						element={
+							<ProtectedRoute>
+								<ConnectionsPage />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/chat"
+						element={
+							<ProtectedRoute>
+								<ChatPage />
+							</ProtectedRoute>
+						}
+					/>
+					<Route path="/" element={<LoginPage />} />
+				</Routes>
+			</Router>
+		</AuthProvider>
 	);
 }
 
