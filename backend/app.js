@@ -6,7 +6,7 @@ import errorHandler from "./Middleware/errorHandler.js";
 import cookieParser from "cookie-parser";
 import authRoutes from "./Router/authRoutes.js";
 import userRouter from "./Router/userRouter.js";
-import uploadRouter from "./Router/uploadRouter.js";
+// import uploadRouter from "./Router/uploadRouter.js";
 import connectionRequestRouter from "./Router/connectionRequestRouter.js";
 import connectionRouter from "./Router/connectionRouter.js";
 import chatRouter from "./Router/chatRouter.js";
@@ -49,7 +49,7 @@ app.use("/api/chats", chatRouter);
 
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/api/upload', uploadRouter);
+// app.use('/api/upload', uploadRouter);
 // Error handler
 app.use(errorHandler);
 

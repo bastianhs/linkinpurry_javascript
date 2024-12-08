@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 
-const MessageInput = ({ onSendMessage }) => {
+const MessageInput = ({ onSendMessage, onTyping }) => {
 	const styles = {
 		inputForm: {
 			display: "flex",
@@ -28,6 +28,12 @@ const MessageInput = ({ onSendMessage }) => {
 		},
 	};
 	const [message, setMessage] = useState("");
+	const typingTimeoutRef = useRef(null);
+
+	const handleChange = (e) => {
+		setMessage(e.target.value);
+		onTyping(); // Trigger typing event
+	};
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
@@ -42,7 +48,7 @@ const MessageInput = ({ onSendMessage }) => {
 			<input
 				type="text"
 				value={message}
-				onChange={(e) => setMessage(e.target.value)}
+				onChange={handleChange}
 				placeholder="Type a message..."
 				style={styles.input}
 			/>

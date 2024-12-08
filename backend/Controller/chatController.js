@@ -58,7 +58,9 @@ const getChatsByUser = async (req, res) => {
 			return acc;
 		}, {});
 
-		const formattedChats = Object.values(uniqueChats);
+		const formattedChats = Object.values(uniqueChats).sort(
+			(a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+		);
 		res.json({ chats: formattedChats, userId: userId.toString() });
 	} catch (error) {
 		console.error("Error in getChatsByUser:", error);
@@ -113,30 +115,8 @@ const createChat = async (req, res) => {
 			return res.status(400).json({ error: "Recipient ID is required" });
 		}
 
-		const existingChat = await prisma.chat.findFirst({
-			where: {
-				AND: [
-					{
-						OR: [
-							{ AND: [{ from_id: fromId }, { to_id: to_id }] },
-							{ AND: [{ from_id: to_id }, { to_id: fromId }] },
-						],
-					},
-					{
-						NOT: {
-							AND: [{ from_id: fromId }, { to_id: fromId }],
-						},
-					},
-				],
-			},
-			include: {
-				users_chat_from_idTousers: true,
-				users_chat_to_idTousers: true,
-			},
-		});
 		// console.log(existingChat);
 
-		// Create new chat
 		const newChat = await prisma.chat.create({
 			data: {
 				from_id: fromId,

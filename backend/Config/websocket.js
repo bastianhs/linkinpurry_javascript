@@ -38,7 +38,26 @@ const setupWebSocket = (server) => {
 	io.on("connection", (socket) => {
 		console.log(`User connected: ${socket.userId}`);
 		userSockets.set(socket.userId, socket);
+		
+		socket.on("typing:start", async (data) => {
+			const { to_id } = data;
+			const from_id = socket.userId;
 
+			const recipientSocket = userSockets.get(to_id);
+			if (recipientSocket) {
+				recipientSocket.emit("typing:start", { from_id });
+			}
+		});
+
+		socket.on("typing:stop", async (data) => {
+			const { to_id } = data;
+			const from_id = socket.userId;
+
+			const recipientSocket = userSockets.get(to_id);
+			if (recipientSocket) {
+				recipientSocket.emit("typing:stop", { from_id });
+			}
+		});
 		socket.on("message", async (data) => {
 			try {
 				const { to_id, message } = data;

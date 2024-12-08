@@ -39,7 +39,7 @@ const ChatList = ({ chats, activeChat, onSelectChat, user }) => {
 		},
 		chatInfo: {
 			flex: 1,
-			minWidth: 0, 
+			minWidth: 0,
 		},
 		userName: {
 			fontSize: "14px",
@@ -59,13 +59,13 @@ const ChatList = ({ chats, activeChat, onSelectChat, user }) => {
 			textOverflow: "ellipsis",
 		},
 	};
-    // console.log(chats);
+	// console.log(chats);
 	const groupedChats = chats.reduce((acc, chat) => {
-        // console.log(chat);
-        const partnerId = chat.otherUser.id;
-        // if (partnerId === 8) {
-        //     console.log("Found chat with user 8:", chat);
-        //   }
+		// console.log(chat);
+		const partnerId = chat.otherUser.id;
+		// if (partnerId === 8) {
+		//     console.log("Found chat with user 8:", chat);
+		//   }
 		if (!acc[partnerId]) {
 			acc[partnerId] = {
 				id: chat.id,
@@ -81,9 +81,12 @@ const ChatList = ({ chats, activeChat, onSelectChat, user }) => {
 		return acc;
 	}, {});
 
-    const uniqueChats = Object.values(groupedChats).filter(chat => 
-        chat.otherUser.id !== user
-      );
+	const uniqueChats = Object.values(groupedChats)
+		.filter((chat) => chat.otherUser.id !== user)
+		.sort(
+			(a, b) =>
+				new Date(b.lastMessage.timestamp) - new Date(a.lastMessage.timestamp)
+		);
 	return (
 		<div style={styles.chatList}>
 			{uniqueChats.map((chat) => (
@@ -91,9 +94,7 @@ const ChatList = ({ chats, activeChat, onSelectChat, user }) => {
 					key={chat.otherUser.id}
 					style={{
 						...styles.chatItem,
-						...(activeChat?.id === chat.otherUser.id
-							? styles.active
-							: {}),
+						...(activeChat?.id === chat.otherUser.id ? styles.active : {}),
 					}}
 					onClick={() => onSelectChat(chat.otherUser)}
 				>
