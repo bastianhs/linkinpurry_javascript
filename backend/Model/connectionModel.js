@@ -1,5 +1,6 @@
 import prisma from "../database/prismaClient.js";
 
+
 const getConnections = async () => {
 	return await prisma.connection.findMany();
 };
@@ -7,26 +8,28 @@ const getConnections = async () => {
 const getConnectionsByFromId = async (from_id) => {
 	const connections = await prisma.connection.findMany({
         where: {
-			from_id
-		},
+            from_id
+        },
         orderBy: {
-			created_at: "desc"
-		},
+            created_at: "desc"
+        },
         select: {
             created_at: true,
             users_connection_to_idTousers: {
                 select: {
                     id: true,
                     username: true,
-                    profile_photo_path: true
+                    full_name: true,
+                    profile_photo_path: true,
                 }
             }
         }
     });
-
+    
     return connections.map(connection => ({
-        id: Number(connection.users_connection_to_idTousers.id),
+        id: connection.users_connection_to_idTousers.id,
         username: connection.users_connection_to_idTousers.username,
+        full_name: connection.users_connection_to_idTousers.full_name,
         profile_photo_path: connection.users_connection_to_idTousers.profile_photo_path,
         created_at: connection.created_at
     }));

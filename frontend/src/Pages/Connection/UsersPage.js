@@ -82,7 +82,7 @@ const styles = {
 const UsersPage = () => {
     const [users, setUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [authenticated, setAuthenticated] = useState(false); // Simulate authentication status
+    const [authenticated, setAuthenticated] = useState(false);
     const [error, setError] = useState(null);
 
     const fetchUsers = async (search = '') => {

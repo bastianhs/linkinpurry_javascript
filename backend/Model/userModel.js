@@ -1,5 +1,6 @@
 import prisma from "../database/prismaClient.js";
 
+
 const getUsers = async () => {
 	return await prisma.users.findMany();
 };
@@ -23,7 +24,7 @@ const getUsersByUsernameSubstring = async (substring) => {
         where: {
             username: {
                 contains: substring,
-                mode: 'insensitive',
+                mode: "insensitive",
             },
         },
     });

@@ -53,7 +53,7 @@ export async function getUsers(req, res) {
         }
 
         const response = users.map(user => ({
-            id: Number(user.id), // Convert from BigInt
+            id: Number(user.id),
             username: user.username,
             profile_photo_path: user.profile_photo_path,
         }));
@@ -69,7 +69,6 @@ export async function getUsers(req, res) {
         });
 
     } catch (error) {
-        // console.error("Error getting users:", error);
         return res.status(500).json({
             errors: "Internal server error"
         });

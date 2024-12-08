@@ -1,5 +1,6 @@
 import prisma from "../database/prismaClient.js";
 
+
 const getConnectionRequests = async () => {
 	return await prisma.connection_request.findMany();
 };
@@ -11,10 +12,24 @@ const getConnectionRequestsByFromIdToId = async (from_id, to_id) => {
 }
 
 const getConnectionRequestsByToId = async (to_id) => {
-	return await prisma.connection_request.findMany({
-		where: { to_id },
-		orderBy: { created_at: "desc" }, // created_at descending
-	});
+    const connectionRequests = await prisma.connection_request.findMany({
+        where: { to_id },
+        orderBy: { created_at: "desc" },
+        include: {
+            users_connection_request_from_idTousers: true
+        }
+    });
+
+    return connectionRequests.map(request => ({
+        from: {
+            id: request.users_connection_request_from_idTousers.id,
+            username: request.users_connection_request_from_idTousers.username,
+            full_name: request.users_connection_request_from_idTousers.full_name,
+            profile_photo_path: request.users_connection_request_from_idTousers.profile_photo_path
+        },
+        to_id: request.to_id,
+        created_at: request.created_at
+    }));
 };
 
 const createConnectionRequest = async (from_id, to_id) => {

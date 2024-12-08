@@ -1,15 +1,7 @@
-import { Prisma } from '@prisma/client';
+import { Prisma } from "@prisma/client";
 import connectionModel from "../Model/connectionModel.js";
 import connectionRequestModel from "../Model/connectionRequestModel.js";
 
-
-// dummy payload
-const createDummyPayload = req => {
-    req.user = {
-        userId: 7 // dummy user id logged in
-    }
-    return req;
-}
 
 const createConnectionRequest = async (req, res) => {
     try {
@@ -47,14 +39,22 @@ const getConnectionRequests = async(req, res) => {
         const toId = Number(req.user.userId);
 
         const connectionRequests = await connectionRequestModel.getConnectionRequestsByToId(toId);
-        const convertedConnectionRequests = connectionRequests.map(request => ({
+        
+        if (connectionRequests.length === 0) {
+            return res.status(404).json({ errors: "No connection requests found" });
+        }
+        
+        const formattedConnectionRequests = connectionRequests.map(request => ({
             ...request,
-            from_id: Number(request.from_id),
+            from: {
+                ...request.from,
+                id: Number(request.from.id)
+            },
             to_id: Number(request.to_id)
         }));
-        
+
         res.status(200).json({
-            data: convertedConnectionRequests
+            data: formattedConnectionRequests
         });
 
     } catch (error) {
@@ -125,8 +125,13 @@ const getConnections = async (req, res) => {
             });
         }
 
+        const formattedConnections = connections.map(connection => ({
+            ...connection,
+            id: Number(connection.id),
+        }));
+
         res.status(200).json({
-            data: connections
+            data: formattedConnections
         });
 
     } catch (error) {
@@ -161,6 +166,14 @@ const deleteConnection = async (req, res) => {
         }
     }
 }
+
+// // dummy payload
+// const createDummyPayload = req => {
+//     req.user = {
+//         userId: 7 // dummy user id logged in
+//     }
+//     return req;
+// }
 
 export {
     createConnectionRequest,
