@@ -1,16 +1,25 @@
-FROM node:20-alpine
+# Use the official Node.js image as the base image
+FROM node:21
 
-RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
+# Set the working directory inside the container
+WORKDIR /app
+COPY package.json package-lock.json ./
 
-WORKDIR /home/node/app
+# RUN npm install -g nodemon
+# Install dependencies
+RUN npm install
+RUN npm rebuild bcrypt --build-from-source
+# RUN npm rebuild bcrypt --build-from-source
 
+COPY . .
+
+# Expose the port that the backend will run on (e.g., 3000)
+RUN chown -R node:node /app
 USER node
 
 COPY --chown=node:node package*.json ./
 
 RUN npm ci
-
-COPY --chown=node:node . .
 
 COPY ./.env.example ./.env
 
@@ -18,4 +27,4 @@ ENV PORT=3000
 
 EXPOSE 3000
 
-CMD ["node", "index.js"]
+CMD ["npm", "start"]

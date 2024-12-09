@@ -1,0 +1,39 @@
+.app-container {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.main-content {
+	flex: 1;
+	padding-top: 52px;
+	background-color: #f3f2ef;
+	min-height: calc(100vh - 52px);
+}
+
+.header {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 52px;
+	background-color: #fff;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+	z-index: 100;
+	transition: box-shadow 0.3s;
+}
+
+.header.scrolled {
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.footer {
+	background-color: #f3f2ef;
+	margin-top: auto;
+}
+
+@media (max-width: 768px) {
+	.main-content {
+		padding-top: 52px;
+	}
+}
