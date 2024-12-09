@@ -205,7 +205,7 @@ const UserProfile = () => {
 					setSnackbarVisible(true);
 					return;
 				}
-
+		
 				// File type validation
 				const validTypes = ["image/jpeg", "image/png", "image/webp"];
 				if (!validTypes.includes(file.type)) {
@@ -216,21 +216,42 @@ const UserProfile = () => {
 					setSnackbarVisible(true);
 					return;
 				}
-
-				const reader = new FileReader();
-				reader.onloadend = () => {
-					setProfilePhoto(reader.result);
-					setFormData((prev) => ({
-						...prev,
-						profile_photo: file,
-					}));
+		
+				const formData = new FormData();
+				formData.append("profile_photo", file);
+		
+				try {
+					const response = await api.put("/users/update-photo", formData, {
+						headers: {
+							"Content-Type": "multipart/form-data",
+						},
+					});
+		
+					if (response.data.success) {
+						setProfilePhoto(response.data.data.profile_photo_path);
+						setFormData((prev) => ({
+							...prev,
+							profile_photo: response.data.data.profile_photo_path,
+						}));
+						setSnackbarMessage({
+							text: "Photo uploaded successfully",
+							type: "success",
+						});
+						setSnackbarVisible(true);
+					} else {
+						setSnackbarMessage({
+							text: response.data.error || "Error uploading photo",
+							type: "error",
+						});
+						setSnackbarVisible(true);
+					}
+				} catch (error) {
 					setSnackbarMessage({
-						text: "Photo selected successfully",
-						type: "success",
+						text: error.response?.data?.error || "Error uploading photo",
+						type: "error",
 					});
 					setSnackbarVisible(true);
-				};
-				reader.readAsDataURL(file);
+				}
 			}
 		};
 		const handleRemovePhoto = () => {
@@ -254,6 +275,7 @@ const UserProfile = () => {
 					full_name: formData.name,
 					work_history: formData.work_history,
 					skills: formData.skills,
+					profile_photo: formData.profile_photo,
 					...(formData.password && { password: formData.password }),
 				};
 
@@ -263,16 +285,6 @@ const UserProfile = () => {
 						"Content-Type": "application/json",
 					},
 				});
-				if (formData.profile_photo) {
-					const photoData = new FormData();
-					photoData.append("profile_photo", formData.profile_photo);
-
-					await api.put("/users/update-photo", photoData, {
-						headers: {
-							"Content-Type": "multipart/form-data",
-						},
-					});
-				}
 
 				setSnackbarMessage({
 					text: "Profile updated successfully",
@@ -489,7 +501,7 @@ const UserProfile = () => {
 									<div className="w-1/3">
 										{userData.profile_photo ? (
 											<img
-												src={userData.profile_photo}
+												src={`http://localhost:4001/${userData.profile_photo}`}
 												alt="Profile"
 												className="w-full rounded-lg shadow-md object-cover"
 											/>

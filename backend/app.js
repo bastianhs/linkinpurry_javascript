@@ -13,7 +13,8 @@ import swaggerUi from "swagger-ui-express";
 import path from "path";
 import { fileURLToPath } from "url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 import indexRouter from "./Router/indexRouter.js";
 
@@ -114,7 +115,7 @@ app.get('/health', async (req, res) => {
 
 // Error handler
 app.use(errorHandler);
-
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Start server
 const PORT = process.env.PORT || 4001;
 server.listen(PORT, () => {

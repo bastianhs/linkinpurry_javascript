@@ -4,6 +4,7 @@ import userModel from "../Model/userModel.js";
 import path from "path";
 // import { upload, processImage } from "../Util/imageHandler.js";
 
+
 const { client } = database;
 
 export async function getProfile(id) {
@@ -24,9 +25,7 @@ export async function getProfile(id) {
 		const user = result.rows[0];
 		// Add the base URL to the profile photo path
 		if (user.profile_photo_path) {
-			user.profile_photo_url = `localhost:4001/uploads/${path.basename(
-				user.profile_photo_path
-			)}`;
+			user.profile_photo_url = `localhost:4001/uploads/${path.basename(user.profile_photo_path)}`;
 		}
 
 		return user;
@@ -50,6 +49,10 @@ export async function getOtherProfile(username) {
 
 		if (result.rows.length === 0) {
 			throw new Error("User not found");
+		}
+		user = result.rows[0];
+		if (user.profile_photo_path) {
+			user.profile_photo_url = `localhost:4001/uploads/${path.basename(user.profile_photo_path)}`;
 		}
 		return result.rows;
 	} catch (error) {
@@ -99,23 +102,26 @@ export async function updateProfile(id,full_name, username, email, password, wor
 export const updateProfileData = async (req, res) => {
 	try {
 		console.log("Updated profile:");
-		const userId = req.user.userId;
-		const { username, email, password, work_history, skills, full_name } =
-			req.body;
-		if (!userId) {
-			return res.status(400).json({
-				success: false,
-				error: "Invalid user ID",
-			});
-		}
-		const updateData = {
-			...(username && { username }),
-			...(email && { email }),
-			...(password && { password }),
-			...(work_history && { work_history }),
-			...(skills && { skills }),
-			...(full_name && { full_name }),
-		};
+        const userId = req.user.userId;
+        const { username, email, password, work_history, skills, full_name, profile_photo } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid user ID",
+            });
+        }
+
+        const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
+        const updateData = {
+            username,
+            email,
+            password: hashedPassword,
+            work_history,
+            skills,
+            full_name,
+            profile_photo_path: profile_photo,
+        };
 		const updatedProfile = await userModel.updateProfile(userId, updateData);
 		// console.log("Updated sini:", updatedProfile);
 		return res.status(200).json({
@@ -172,6 +178,46 @@ export async function getUsers(req, res) {
 		});
 	}
 }
+export const updateProfilePhoto = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const profile_photo = req.file ? req.file.filename : null;
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid user ID",
+            });
+        }
+
+        if (!profile_photo) {
+            return res.status(400).json({
+                success: false,
+                error: "No photo uploaded",
+            });
+        }
+		const relativePath = `uploads/${profile_photo}`;
+        const query = `
+            UPDATE users
+            SET profile_photo_path = $1, updated_at = NOW()
+            WHERE id = $2
+            RETURNING *`;
+        const values = [relativePath, userId];
+        const result = await client.query(query, values);
+
+        return res.status(200).json({
+            success: true,
+            message: "Profile photo updated successfully",
+            data: result.rows[0],
+        });
+    } catch (error) {
+        console.error("Profile photo update error:", error);
+        return res.status(500).json({
+            success: false,
+            error: "Failed to update profile photo",
+        });
+    }
+};
 // export const updateProfileImage = async (req, res) => {
 // 	try {
 // 		upload.single("image")(req, res, async (err) => {

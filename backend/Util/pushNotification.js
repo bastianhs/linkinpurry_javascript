@@ -1,4 +1,3 @@
-// backend/Util/pushNotification.js
 import webPush from 'web-push';
 import vapidKeys from '../Config/vapidKeys.js';
 
