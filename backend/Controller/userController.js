@@ -8,31 +8,33 @@ const { client } = database;
 
 export async function getProfile(id) {
 	try {
-	  if (!id || isNaN(id)) {
-		throw new Error("Invalid user ID format");
-	  }
-	  const userId = BigInt(id);
-  
-	  const query = "SELECT * FROM users WHERE id = $1";
-	  const values = [userId];
-	  const result = await client.query(query, values);
-  
-	  if (result.rows.length === 0) {
-		throw new Error("User not found");
-	  }
-  
-	  const user = result.rows[0];
-	  // Add the base URL to the profile photo path
-	  if (user.profile_photo_path) {
-		user.profile_photo_url = `localhost:4001/uploads/${path.basename(user.profile_photo_path)}`;
-	  }
-  
-	  return user;
+		if (!id || isNaN(id)) {
+			throw new Error("Invalid user ID format");
+		}
+		const userId = BigInt(id);
+
+		const query = "SELECT * FROM users WHERE id = $1";
+		const values = [userId];
+		const result = await client.query(query, values);
+
+		if (result.rows.length === 0) {
+			throw new Error("User not found");
+		}
+
+		const user = result.rows[0];
+		// Add the base URL to the profile photo path
+		if (user.profile_photo_path) {
+			user.profile_photo_url = `localhost:4001/uploads/${path.basename(
+				user.profile_photo_path
+			)}`;
+		}
+
+		return user;
 	} catch (error) {
-	  if (error.message.includes("invalid input syntax")) {
-		throw new Error("Invalid user ID format");
-	  }
-	  throw new Error(`Failed to fetch profile: ${error.message}`);
+		if (error.message.includes("invalid input syntax")) {
+			throw new Error("Invalid user ID format");
+		}
+		throw new Error(`Failed to fetch profile: ${error.message}`);
 	}
 }
 export async function getOtherProfile(username) {

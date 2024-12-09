@@ -34,63 +34,6 @@ function App() {
 	return (
 		<AuthProvider>
 			<Router>
-				<Routes>
-					{/* Public Routes */}
-					<Route path="/register" element={<RegisterPage />} />
-					<Route path="/login" element={<LoginPage />} />
-
-					{/* Protected Routes */}
-					<Route
-						path="/profile/:id"
-						element={
-							<ProtectedRoute>
-								<MyProfile />
-							</ProtectedRoute>
-						}
-					/>
-
-					<Route
-						path="/users"
-						element={
-							<ProtectedRoute>
-								<UsersPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="/connection-requests"
-						element={
-							<ProtectedRoute>
-								<ConnectionRequestsPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="/connections/:userId"
-						element={
-							<ProtectedRoute>
-								<ConnectionsPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="/connections/:userId"
-						element={
-							<ProtectedRoute>
-								<ConnectionsPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="/chat"
-						element={
-							<ProtectedRoute>
-								<ChatPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route path="/" element={<LoginPage />} />
-				</Routes>
 				<div className="app-container">
 					<Routes>
 						{/* Public Routes - No Header/Footer */}
@@ -108,7 +51,10 @@ function App() {
 										<main className="main-content">
 											<Routes>
 												<Route path="/profile" element={<MyProfile />} />
-												<Route path="/profile/:username" element={<OtherUserProfile />} />
+												<Route
+													path="/profile/:username"
+													element={<OtherUserProfile />}
+												/>
 
 												<Route path="/users" element={<UsersPage />} />
 												<Route

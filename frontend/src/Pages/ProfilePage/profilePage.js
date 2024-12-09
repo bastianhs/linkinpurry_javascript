@@ -158,7 +158,7 @@ const UserProfile = () => {
 				const response = await api.get("/profile/me", {
 					credentials: "include",
 				});
-
+        // console.log(data)
 				const data = response.data.body;
 				setUserData(data);
 			} catch (error) {

@@ -239,7 +239,8 @@ router.get("/me", authenticate,profileAuthenticate, async (req, res) => {
 			});
 		}
 		const profile = await getProfile(id);
-		if (!profile.length) {
+    // console.log(profile);
+		if (!profile) {
 			return res.status(404).json({
 				success: false,
 				message: "Profile not found",
@@ -247,7 +248,8 @@ router.get("/me", authenticate,profileAuthenticate, async (req, res) => {
 			});
 		}
 
-		const profileData = profile[0];
+		const profileData = profile;
+
 		const profileConnection = await connectionModel.getConnectionsByFromId(
 			profileData.id
 		);
