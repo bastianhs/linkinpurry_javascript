@@ -18,11 +18,20 @@ import SupportPage from "./Pages/SupportPage/SupportPage";
 import { useEffect, useState } from "react";
 import AboutPage from "./Components/About/AboutPage";
 import OtherUserProfile from "./Pages/ProfilePage/OtherUserProfilePage";
+import { subscribeToNotifications } from "./services/notificationService";
 
 function App() {
 	const [isScrolled, setIsScrolled] = useState(false);
 
 	useEffect(() => {
+		if ('Notification' in window) {
+			Notification.requestPermission()
+			  .then(permission => {
+				if (permission === 'granted') {
+				  subscribeToNotifications();
+				}
+			  });
+		  }
 		const handleScroll = () => {
 			setIsScrolled(window.scrollY > 0);
 		};
