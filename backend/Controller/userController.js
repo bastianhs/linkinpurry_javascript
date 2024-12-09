@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import database from "../database/db_connector.js";
 import userModel from "../Model/userModel.js";
 import path from "path";

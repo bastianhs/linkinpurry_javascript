@@ -90,7 +90,7 @@ const OtherUserProfile = () => {
 			cursor: "pointer",
 			display: "inline-flex",
 			alignItems: "center",
-			justifyContent: "center",
+			justifyContentç: "center",
 			gap: "8px",
 			minWidth: "120px",
 			height: "32px",
@@ -99,17 +99,29 @@ const OtherUserProfile = () => {
 		primaryButton: {
 			backgroundColor: "#0a66c2",
 			color: "#ffffff",
-			border: "1px solid #0a66c2",
+			borderColor: "#0a66c2",
+			"&:hover": {
+				backgroundColor: "#004182",
+				boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+			},
 		},
 		secondaryButton: {
 			backgroundColor: "#ffffff",
-			color: "#0a66c2",
-			border: "1px solid #0a66c2",
+			color: "rgba(0,0,0,0.6)",
+			borderColor: "rgba(0,0,0,0.3)",
+			"&:hover": {
+				backgroundColor: "#f3f3f3",
+				borderColor: "rgba(0,0,0,0.5)",
+			},
 		},
 		dangerButton: {
 			backgroundColor: "#ffffff",
 			color: "#cc1016",
-			border: "1px solid #cc1016",
+			borderColor: "#cc1016",
+			"&:hover": {
+				backgroundColor: "#fff1f1",
+				borderColor: "#a00d12",
+			},
 		},
 		buttonIcon: {
 			width: "16px",
@@ -161,6 +173,25 @@ const OtherUserProfile = () => {
 		postDate: {
 			fontSize: "12px",
 			color: "rgba(0,0,0,0.6)",
+		},
+		actionButtons: {
+			display: "flex",
+			gap: "8px",
+			marginTop: "12px",
+		},
+
+		buttonBase: {
+			display: "flex",
+			alignItems: "center",
+			gap: "8px",
+			padding: "6px 16px",
+			borderRadius: "16px",
+			fontSize: "14px",
+			fontWeight: 600,
+			cursor: "pointer",
+			transition: "all 0.2s ease",
+			border: "1px solid",
+			minWidth: "120px",
 		},
 	};
 
@@ -333,33 +364,45 @@ const OtherUserProfile = () => {
 						<div style={styles.actionButtons}>
 							{connectionStatus === "connected" && (
 								<>
-									<button style={styles.primaryButton} onClick={handleMessage}>
-										<MessageSquare size={16} />
+									<button
+										style={{ ...styles.buttonBase, ...styles.primaryButton }}
+										onClick={handleMessage}
+									>
+										<MessageSquare size={16} style={{ marginRight: "8px" }} />
 										Message
 									</button>
 									<button
-										style={styles.dangerButton}
+										style={{ ...styles.buttonBase, ...styles.dangerButton }}
 										onClick={handleDisconnect}
 									>
-										<UserMinus size={16} />
+										<UserMinus size={16} style={{ marginRight: "8px" }} />
 										Remove Connection
 									</button>
 								</>
 							)}
 							{connectionStatus === "pending" && (
 								<>
-									<button style={styles.primaryButton} onClick={handleAccept}>
+									<button
+										style={{ ...styles.buttonBase, ...styles.primaryButton }}
+										onClick={handleAccept}
+									>
 										<Check size={16} />
 										Accept
 									</button>
-									<button style={styles.secondaryButton} onClick={handleReject}>
+									<button
+										style={{ ...styles.buttonBase, ...styles.secondaryButton }}
+										onClick={handleReject}
+									>
 										<X size={16} />
 										Reject
 									</button>
 								</>
 							)}
 							{connectionStatus === "not connected" && (
-								<button style={styles.primaryButton} onClick={handleConnect}>
+								<button
+									style={{ ...styles.buttonBase, ...styles.primaryButton }}
+									onClick={handleConnect}
+								>
 									<UserPlus size={16} />
 									Connect
 								</button>

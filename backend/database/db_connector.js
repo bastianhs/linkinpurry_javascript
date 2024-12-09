@@ -7,7 +7,7 @@ const client = new Client({
   host: process.env.POSTGRES_HOST  || 'db',
   database: process.env.POSTGRES_DB  || 'wbd',
   password: process.env.POSTGRES_PASSWORD || 'fjfj',
-  port:process.env.PORT  || 5432,
+  port:process.env.PORT  || 5433,
 });
 
 

@@ -4,16 +4,13 @@ FROM node:21
 # Set the working directory inside the container
 WORKDIR /app
 COPY package.json package-lock.json ./
-# Install frontend dependencies
+# Install dependencies
 RUN npm install
+RUN npm rebuild bcrypt --build-from-source
 
-COPY . .
-
+# Expose the port that the backend will run on (e.g., 3000)
+EXPOSE 4001
 RUN chown -R node:node /app
 USER node
-
-# Expose the port that the frontend will run on (e.g., 3001)
-EXPOSE 3000
-
-# Command to run the frontend (adjust as necessary)
+# Command to run the backend (adjust as necessary)
 CMD ["npm", "run", "start"]
