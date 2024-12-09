@@ -142,14 +142,14 @@ const Footer = () => {
 
 					<div style={{ ...styles.section, ...styles.sectionRight }}>
 						<h3 style={styles.title}>Contact</h3>
-						<Link to="/contact" style={styles.link}>
-							Contact Us
-						</Link>
 						<Link to="/support" style={styles.link}>
 							Support
 						</Link>
+						<Link to="/contact" style={styles.link}>
+							Contact Us
+						</Link>
 						<Link to="/nothing" style={styles.link}>
-							Comming Soon...
+							Coming Soon...
 						</Link>
 					</div>
 				</div>
