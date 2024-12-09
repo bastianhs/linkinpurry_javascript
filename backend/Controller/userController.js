@@ -46,14 +46,13 @@ export async function getOtherProfile(username) {
 		const query = "SELECT * FROM users WHERE username = $1";
 		const values = [userId];
 		const result = await client.query(query, values);
-
 		if (result.rows.length === 0) {
 			throw new Error("User not found");
 		}
-		user = result.rows[0];
-		if (user.profile_photo_path) {
-			user.profile_photo_url = `localhost:4001/uploads/${path.basename(user.profile_photo_path)}`;
-		}
+		
+		// if (user.profile_photo_path) {
+		// 	user.profile_photo_url = `localhost:4001/uploads/${path.basename(user.profile_photo_path)}`;
+		// }
 		return result.rows;
 	} catch (error) {
 		if (error.message.includes("invalid input syntax")) {

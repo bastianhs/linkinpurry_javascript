@@ -12,6 +12,7 @@ import {
 import { MessageSquare, UserPlus, UserMinus } from "lucide-react";
 import api from "../../Utils/api";
 import Snackbar from "../../Components/Snackbar";
+import { Check, X } from "lucide-react";
 
 const OtherUserProfile = () => {
 	const { username } = useParams();
@@ -195,6 +196,7 @@ const OtherUserProfile = () => {
 		const fetchConnections = async () => {
 			setLoading(true);
 			try {
+				console.log(userData);
 				const response = await api.get(`/connections/status/${userData.id}`);
 				if (response.isPending) {
 					setConnectionStatus("pending");

@@ -201,6 +201,7 @@ router.get("/other/:username", profileAuthenticate, async (req, res) => {
 				success: true,
 				message: "Profile fetched successfully",
 				body: {
+					id: profileData.id || "",
 					created_at: profileData.created_at || "",
 					updated_at: profileData.updated_at || "",
 					email: profileData.email || "",

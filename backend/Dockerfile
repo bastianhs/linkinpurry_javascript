@@ -8,7 +8,6 @@ COPY package.json package-lock.json ./
 # RUN npm install -g nodemon
 # Install dependencies
 RUN npm install
-RUN npm rebuild bcrypt --build-from-source
 # RUN npm rebuild bcrypt --build-from-source
 
 COPY . .
@@ -23,8 +22,10 @@ RUN npm ci
 
 COPY ./.env.example ./.env
 
-ENV PORT=3000
+ENV PORT=4001
 
-EXPOSE 3000
+EXPOSE 4001
+RUN npm rebuild bcrypt --build-from-source
+CMD ["npm", "rebuild", "bcrypt", "--build-from-source"]
 
-CMD ["npm", "start"]
+CMD ["npm", "run", "start"]
