@@ -16,8 +16,15 @@ COPY . .
 # Expose the port that the backend will run on (e.g., 3000)
 RUN chown -R node:node /app
 USER node
-# Command to run the backend (adjust as necessary)
-# CMD ["npm", "run", "start"]
+
+COPY --chown=node:node package*.json ./
+
+RUN npm ci
+
+COPY ./.env.example ./.env
+
+ENV PORT=3000
+
 EXPOSE 3000
 
 CMD ["npm", "start"]
