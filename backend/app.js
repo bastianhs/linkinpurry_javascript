@@ -3,7 +3,7 @@ import router from "./Router/router.js";
 import database from "./database/db_connector.js";
 import {errorHandler} from "./Middleware/errorHandler.js";
 import cookieParser from "cookie-parser";
-import authRoutes from "./Router/authRoutes.js";
+import authRouter from "./Router/authRouter.js";
 import userRouter from "./Router/userRouter.js";
 import connectionRequestRouter from "./Router/connectionRequestRouter.js";
 import connectionRouter from "./Router/connectionRouter.js";
