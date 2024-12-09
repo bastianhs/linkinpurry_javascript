@@ -4,11 +4,6 @@ import {errorHandler} from "./Middleware/errorHandler.js";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import cors from "cors";
-import http from 'http';
-import setupWebSocket from './Config/websocket.js';
-import notificationRouter from './Router/notificationRouter.js';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import http from "http";
 import setupWebSocket from "./Config/websocket.js";
 
@@ -18,7 +13,7 @@ import swaggerUi from "swagger-ui-express";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 import indexRouter from "./Router/indexRouter.js";
 
@@ -27,14 +22,6 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 const io = setupWebSocket(server);
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-app.use(cors({
-  origin: 'http://localhost:3000',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
 
 app.use(
 	cors({
@@ -102,15 +89,6 @@ const specs = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 // Routes
-app.use('/', router);
-app.use("/api/auth", authRoutes);
-app.use("/api/profile", router);
-app.use("/api/users", userRouter);
-app.use("/api/connection-requests", connectionRequestRouter);
-app.use("/api/connections", connectionRouter);
-app.use("/api/chats", chatRouter);
-app.use("/api/notifications", notificationRouter);
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use("/api", indexRouter);
 
