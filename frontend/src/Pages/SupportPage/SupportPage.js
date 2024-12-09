@@ -139,8 +139,8 @@ const SupportPage = () => {
 					<h2 style={styles.sectionTitle}>Contact Support</h2>
 					<p style={styles.contact}>
 						Can't find what you're looking for? Email us at{" "}
-						<a href="mailto:support@linkinpurry.com" style={styles.email}>
-							support@linkinpurry.com
+						<a href="mailto:k04support@linkinpurry.com" style={styles.email}>
+							k04support@linkinpurry.com
 						</a>
 					</p>
 				</section>

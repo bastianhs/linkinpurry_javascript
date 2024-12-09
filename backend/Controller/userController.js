@@ -34,8 +34,29 @@ export async function getProfile(id) {
 	  }
 	  throw new Error(`Failed to fetch profile: ${error.message}`);
 	}
-  }
+}
+export async function getOtherProfile(username) {
+	try {
+		if (!username) {
+			throw new Error("Invalid username format");
+		}
+		const userId = username;
 
+		const query = "SELECT * FROM users WHERE username = $1";
+		const values = [userId];
+		const result = await client.query(query, values);
+
+		if (result.rows.length === 0) {
+			throw new Error("User not found");
+		}
+		return result.rows;
+	} catch (error) {
+		if (error.message.includes("invalid input syntax")) {
+			throw new Error("Invalid user ID format");
+		}
+		throw new Error(`Failed to fetch profile: ${error.message}`);
+	}
+}
 export async function createProfile(name, email, password) {
 	try {
 		const hashedPassword = await bcrypt.hash(password, 10);
@@ -72,7 +93,50 @@ export async function updateProfile(id,full_name, username, email, password, wor
 	} catch (error) {
 	  throw new Error(`Failed to update profile: ${error.message}`);
 	}
-  }
+}
+export const updateProfileData = async (req, res) => {
+	try {
+		console.log("Updated profile:");
+		const userId = req.user.userId;
+		const { username, email, password, work_history, skills, full_name } =
+			req.body;
+		if (!userId) {
+			return res.status(400).json({
+				success: false,
+				error: "Invalid user ID",
+			});
+		}
+		const updateData = {
+			...(username && { username }),
+			...(email && { email }),
+			...(password && { password }),
+			...(work_history && { work_history }),
+			...(skills && { skills }),
+			...(full_name && { full_name }),
+		};
+		const updatedProfile = await userModel.updateProfile(userId, updateData);
+		// console.log("Updated sini:", updatedProfile);
+		return res.status(200).json({
+			success: true,
+			message: "Profile updated successfully",
+			data: {
+				id: Number(updatedProfile.id),
+				username: updatedProfile.username,
+				email: updatedProfile.email,
+				full_name: updatedProfile.full_name,
+				work_history: updatedProfile.work_history,
+				skills: updatedProfile.skills,
+				updated_at: updatedProfile.updated_at,
+			},
+		});
+	} catch (error) {
+		console.error("Profile update error:", error);
+		return res.status(500).json({
+			success: false,
+			error: "Failed to update profile",
+		});
+	}
+};
 
 export async function getUsers(req, res) {
 	try {

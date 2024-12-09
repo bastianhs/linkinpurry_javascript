@@ -4,15 +4,16 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from 'url';
 import {
-  getProfile,
-  createProfile,
-  updateProfile,
+	getProfile,
+	createProfile,
+	getOtherProfile,
 } from "../Controller/userController.js";
 import {
-  authenticate,
-  profileAuthenticate
+	authenticate,
+	profileAuthenticate,
 } from "../Middleware/authenticate.js";
-
+import connectionModel from "../Model/connectionModel.js";
+import feedModel from "../Model/feedModel.js";
 const router = express.Router();
 
 // Get the directory name in ES modules
@@ -38,88 +39,109 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Get profile by username
-router.get("/me", authenticate, async (req, res) => {
-  const loggedId = req.user?.userId || null;
-  if (!loggedId) {
-    return res.status(401).json({ message: "Unauthorized, please login." });
-  }
-  res.status(200).json({
-    success: true,
-    message: "User fetched successfully.",
-    body: {
-      userId: loggedId,
-    },
-  });
-});
+const serializeBigInt = (data) => {
+	if (Array.isArray(data)) {
+		return data.map((item) => serializeBigInt(item));
+	}
+	if (typeof data === "object" && data !== null) {
+		return Object.fromEntries(
+			Object.entries(data).map(([key, value]) => [key, serializeBigInt(value)])
+		);
+	}
+	if (typeof data === "bigint") {
+		return Number(data);
+	}
+	return data;
+};
 
-router.get("/:id", profileAuthenticate, async (req, res) => {
-  try {
-    const { id } = req.params; // get parameter called id
+router.get("/",authenticate, profileAuthenticate, async (req, res) => {
+	try {
+		const id = req.user.userId; // get parameter called id
 
-    if (!id || isNaN(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid user ID format",
-        body: null
-      });
-    }
+		if (!id || isNaN(id)) {
+			return res.status(400).json({
+				success: false,
+				message: "Invalid user ID format",
+				body: null,
+			});
+		}
 
-    const profile = await getProfile(id);
-    if (!profile) {
-      return res.status(404).json({
-        success: false,
-        message: "Profile not found",
-        body: null,
-      });
-    }
-
-    // Construct the desired JSON format
-    const responseData = {
-      success: true,
-      message: "Profile fetched successfully",
-      body: {
-        created_at: profile.created_at || "",
-        updated_at: profile.updated_at || "",
-        email: profile.email || "",
-        username: profile.username || "",
-        full_name: profile.full_name || "",
-        work_history: profile.work_history || "",
-        skills: profile.skills || "",
-        connection_count: profile.connection_count || 0,
-        profile_photo: profile.profile_photo_url || "",
-      },
-    };
-    return res.json(responseData);
-  } catch (error) {
-    console.error("Profile fetch error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      body: null,
-    });
-  }
+		const profile = await getProfile(id);
+		const loggedId = req.user?.userId || null;
+		if (!profile.length) {
+			return res.status(404).json({
+				success: false,
+				message: "Profile not found",
+				body: null,
+			});
+		}
+		const profileData = profile[0];
+		if (!oggedId) {
+			const responseData = {
+				success: true,
+				message: "Profile fetched successfully",
+				body: {
+					created_at: profileData.created_at || "",
+					updated_at: profileData.updated_at || "",
+					email: profileData.email || "",
+					username: profileData.username || "",
+					name: profileData.name || "",
+					work_history: profileData.work_history || "",
+					skills: profileData.skills || "",
+					connection_count: profileData.connection_count || 0,
+					profile_photo: profileData.profile_photo || "",
+					relevant_posts: profileData.relevant_posts || [], // Ensure this is an array
+				},
+			};
+			return res.json(responseData);
+		} else {
+			const responseData = {
+				success: true,
+				message: "Profile fetched successfully",
+				body: {
+					created_at: profileData.created_at || "",
+					updated_at: profileData.updated_at || "",
+					username: profileData.username || "",
+					name: profileData.name || "",
+					work_history: profileData.work_history || "",
+					skills: profileData.skills || "",
+					connection_count: profileData.connection_count || 0,
+					profile_photo: profileData.profile_photo || "",
+					email: profileData.email || "",
+				},
+			};
+			return res.json(responseData);
+		}
+	} catch (error) {
+		console.error("Profile fetch error:", error);
+		res.status(500).json({
+			success: false,
+			message: "Internal server error",
+			body: null,
+		});
+	}
 });
 
 
 // Create a new profile
 router.post("/", async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-    // console.log(req.body);
+	try {
+		const { name, email, password } = req.body;
+		// console.log(req.body);
 
-    const newProfile = await createProfile(name, email, password);
-    res.status(201).json(newProfile);
-  } catch (error) {
-    console.error("Profile creation error:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
+		const newProfile = await createProfile(name, email, password);
+		res.status(201).json(newProfile);
+	} catch (error) {
+		console.error("Profile creation error:", error);
+		res.status(500).json({ error: "Internal server error" });
+	}
 });
 
 // Update an existing profile
 router.put("/:id", authenticate, upload.single('profile_photo'), async (req, res) => {
   try {
     const logged_id = req.user?.userId || null;
-    const { username, email, password, work_history, skills, full_name } = req.body;
+    const { username, email, password, work_history, skills } = req.body;
     const { id } = req.params;
     const profile_photo = req.file ? req.file.path : null;
 
@@ -127,12 +149,177 @@ router.put("/:id", authenticate, upload.single('profile_photo'), async (req, res
       return res.status(401).json({ message: "not your account, please login." });
     }
 
-    const updatedProfile = await updateProfile(id, full_name, username, email, password, work_history, skills, profile_photo);
+    const updatedProfile = await updateProfile(id, username, email, password, work_history, skills, profile_photo);
     res.json(updatedProfile);
   } catch (error) {
     console.error("Profile update error:", error);
     res.status(400).json({ error: "Internal server error" });
   }
+});
+router.get("/other/:username", profileAuthenticate, async (req, res) => {
+	try {
+		const { username } = req.params;
+
+    const updatedProfile = await updateProfile(id, full_name, username, email, password, work_history, skills, profile_photo);
+    res.json(updatedProfile);
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(400).json({ error: "Internal server error" });
+  }try{
+		if (!username) {
+			console.log(!username);
+			return res.status(400).json({
+				success: false,
+				message: "Invalid user username format",
+				body: null,
+			});
+		}
+		const profile = await getOtherProfile(username);
+		const loggedId = req.user?.userId || null;
+
+		if (!profile.length) {
+			return res.status(404).json({
+				success: false,
+				message: "Profile not found",
+				body: null,
+			});
+		}
+
+		const profileData = profile[0];
+		const profileConnection = await connectionModel.getConnectionsByFromId(
+			profileData.id
+		);
+		const isConnected = !!profileConnection.find(
+			(connection) => Number(connection.id) === Number(loggedId)
+		);
+		console.log(isConnected);
+		let profileFeeds = await feedModel.getOtherFeed(profileData.id);
+		if (profileFeeds || profileFeeds.length !== 0) {
+			profileFeeds = profileFeeds.map((feed) => ({
+				...feed,
+				id: Number(feed.id),
+				user_id: Number(feed.user_id),
+			}));
+		}
+
+		if (loggedId) {
+			const responseData = {
+				success: true,
+				message: "Profile fetched successfully",
+				body: {
+					created_at: profileData.created_at || "",
+					updated_at: profileData.updated_at || "",
+					email: profileData.email || "",
+					username: profileData.username || "",
+					name: profileData.full_name || "",
+					work_history: profileData.work_history || "",
+					skills: profileData.skills || "",
+					connection_count: profileConnection.length || 0,
+					profile_photo: profileData.profile_photo_path || "",
+					relevant_posts: profileFeeds || [],
+					connection_status: isConnected,
+				},
+			};
+			return res.json(responseData);
+		} else {
+			const responseData = {
+				success: true,
+				message: "Profile fetched successfully",
+				body: {
+					created_at: profileData.created_at || "",
+					updated_at: profileData.updated_at || "",
+					username: profileData.username || "",
+					name: profileData.full_name || "",
+					work_history: profileData.work_history || "",
+					skills: profileData.skills || "",
+					connection_count: profileConnection.length || 0,
+					profile_photo: profileData.profile_photo_path || "",
+					email: profileData.email || "",
+					connection_status: false,
+				},
+			};
+			return res.json(responseData);
+		}
+	} catch (error) {
+		console.error("Profile fetch error:", error);
+		res.status(500).json({
+			success: false,
+			message: "Internal server error",
+			body: null,
+		});
+	}
+});
+
+router.get("/me", authenticate,profileAuthenticate, async (req, res) => {
+	try {
+		const id = req.user.userId; 
+
+		if (!id) {
+			console.log(!id);
+			return res.status(400).json({
+				success: false,
+				message: "Invalid user id format",
+				body: null,
+			});
+		}
+		const profile = await getProfile(id);
+		if (!profile.length) {
+			return res.status(404).json({
+				success: false,
+				message: "Profile not found",
+				body: null,
+			});
+		}
+
+		const profileData = profile[0];
+		const profileConnection = await connectionModel.getConnectionsByFromId(
+			profileData.id
+		);
+
+		if (id) {
+			const responseData = {
+				success: true,
+				message: "Profile fetched successfully",
+				body: {
+					created_at: profileData.created_at || "",
+					updated_at: profileData.updated_at || "",
+					email: profileData.email || "",
+					username: profileData.username || "",
+					name: profileData.full_name || "",
+					work_history: profileData.work_history || "",
+					skills: profileData.skills || "",
+					connection_count: profileConnection.length || 0,
+					profile_photo: profileData.profile_photo_path || "",
+				},
+			};
+			return res.json(responseData);
+		} else {
+			const responseData = {
+				success: false,
+				message: "Profile fetched successfully",
+				body: {
+					created_at: profileData.created_at || "",
+					updated_at: profileData.updated_at || "",
+					username: profileData.username || "",
+					name: profileData.full_name || "",
+					work_history: profileData.work_history || "",
+					skills: profileData.skills || "",
+					connection_count: profileConnection.length || 0,
+					profile_photo: profileData.profile_photo_path || "",
+					email: profileData.email || "",
+					connection_status: false,
+				},
+			};
+			return res.json(responseData);
+		}
+	} catch (error) {
+		console.error("Profile fetch error:", error);
+		res.status(500).json({
+			success: false,
+			message: "Internal server error",
+			body: null,
+		});
+	}
 });
 
 export default router;

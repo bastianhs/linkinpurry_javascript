@@ -1,196 +1,281 @@
 import React, { useState, useEffect } from "react";
 import api from "../../api";
 import Snackbar from "../../Components/Snackbar";
-
-
-const styles = {
-    page: {
-        padding: "20px",
-        fontFamily: "Arial, sans-serif",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center"
-    },
-    header: {
-        fontSize: "24px",
-        marginBottom: "20px",
-        textAlign: "center"
-    },
-    list: {
-        listStyleType: "none",
-        padding: 0,
-        width: "100%",
-        maxWidth: "600px"
-    },
-    item: {
-        display: "flex",
-        alignItems: "center",
-        marginBottom: "15px",
-        padding: "10px",
-        border: "1px solid #ccc",
-        borderRadius: "5px",
-        flexWrap: "wrap"
-    },
-    photo: {
-        width: "50px",
-        height: "50px",
-        borderRadius: "50%",
-        marginRight: "15px"
-    },
-    info: {
-        flex: 1,
-        minWidth: "200px"
-    },
-    fullName: {
-        fontSize: "18px",
-        margin: 0
-    },
-    username: {
-        fontSize: "16px",
-        color: "#555",
-        margin: "0 0 10px 0"
-    },
-    date: {
-        fontSize: "14px",
-        color: "#999"
-    },
-    button: {
-        padding: "8px 12px",
-        border: "none",
-        borderRadius: "5px",
-        cursor: "pointer",
-        marginLeft: "10px",
-        marginTop: "10px"
-    },
-    acceptButton: {
-        backgroundColor: "#4CAF50",
-        color: "white"
-    },
-    declineButton: {
-        backgroundColor: "#f44336",
-        color: "white"
-    }
-};
+import { Check, X, UserPlus } from "lucide-react";
 
 const ConnectionRequestsPage = () => {
-    const [requests, setRequests] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [successMessage, setSuccessMessage] = useState("");
-    const [snackbarVisible, setSnackbarVisible] = useState(false);
+	const [requests, setRequests] = useState([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(null);
+	const [snackbarMessage, setSnackbarMessage] = useState("");
+	const [snackbarVisible, setSnackbarVisible] = useState(false);
 
-    useEffect(() => {
-        const fetchRequests = async () => {
-            try {
-                const response = await api.get("http://localhost:4001/api/connection-requests");
-                setRequests(response.data.data);
-            } catch (err) {
-                const errorMessage = err.response && err.response.data && err.response.data.errors
-                ? err.response.data.errors
-                : `Failed to fetch connection requests: ${err.message}`;
-                setError(errorMessage);
-            } finally {
-                setLoading(false);
-            }
-        };
+	const styles = {
+		container: {
+			maxWidth: "1128px",
+			margin: "0 auto",
+			padding: "24px 16px",
+			backgroundColor: "#f3f2ef",
+			minHeight: "calc(100vh - 52px)",
+		},
+		header: {
+			backgroundColor: "white",
+			borderRadius: "8px",
+			padding: "24px",
+			marginBottom: "24px",
+			boxShadow: "0 0 0 1px rgba(0,0,0,0.08)",
+		},
+		title: {
+			fontSize: "20px",
+			fontWeight: "600",
+			color: "rgba(0,0,0,0.9)",
+			marginBottom: "4px",
+		},
+		subtitle: {
+			fontSize: "14px",
+			color: "rgba(0,0,0,0.6)",
+		},
+		grid: {
+			display: "grid",
+			gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+			gap: "20px",
+			"@media (max-width: 640px)": {
+				gridTemplateColumns: "1fr",
+			},
+		},
+		card: {
+			backgroundColor: "white",
+			borderRadius: "8px",
+			padding: "16px",
+			boxShadow: "0 0 0 1px rgba(0,0,0,0.08)",
+			transition: "box-shadow 0.3s",
+			"&:hover": {
+				boxShadow: "0 0 0 1px rgba(0,0,0,0.15)",
+			},
+		},
+		profileSection: {
+			display: "flex",
+			alignItems: "center",
+			marginBottom: "16px",
+		},
+		avatar: {
+			width: "56px",
+			height: "56px",
+			borderRadius: "50%",
+			marginRight: "12px",
+			objectFit: "cover",
+		},
+		info: {
+			flex: 1,
+		},
+		name: {
+			fontSize: "16px",
+			fontWeight: "600",
+			color: "rgba(0,0,0,0.9)",
+			marginBottom: "4px",
+			"&:hover": {
+				color: "#0a66c2",
+				textDecoration: "underline",
+				cursor: "pointer",
+			},
+		},
+		username: {
+			fontSize: "14px",
+			color: "rgba(0,0,0,0.6)",
+			marginBottom: "4px",
+		},
+		date: {
+			fontSize: "12px",
+			color: "rgba(0,0,0,0.6)",
+		},
+		actions: {
+			display: "flex",
+			gap: "8px",
+			marginTop: "16px",
+		},
+		button: {
+			flex: 1,
+			padding: "6px 16px",
+			borderRadius: "16px",
+			fontSize: "14px",
+			fontWeight: "600",
+			cursor: "pointer",
+			display: "flex",
+			alignItems: "center",
+			justifyContent: "center",
+			gap: "8px",
+			transition: "all 0.2s",
+		},
+		acceptButton: {
+			backgroundColor: "#0a66c2",
+			color: "white",
+			border: "none",
+			"&:hover": {
+				backgroundColor: "#004182",
+			},
+		},
+		ignoreButton: {
+			backgroundColor: "white",
+			color: "rgba(0,0,0,0.6)",
+			border: "1px solid rgba(0,0,0,0.6)",
+			"&:hover": {
+				border: "2px solid rgba(0,0,0,0.6)",
+				backgroundColor: "rgba(0,0,0,0.08)",
+			},
+		},
+		emptyState: {
+			textAlign: "center",
+			padding: "40px 20px",
+			backgroundColor: "white",
+			borderRadius: "8px",
+			boxShadow: "0 0 0 1px rgba(0,0,0,0.08)",
+		},
+		emptyIcon: {
+			marginBottom: "16px",
+			color: "rgba(0,0,0,0.6)",
+		},
+		emptyText: {
+			fontSize: "16px",
+			color: "rgba(0,0,0,0.6)",
+		},
+	};
 
-        fetchRequests();
-    }, []);
+	useEffect(() => {
+		const fetchRequests = async () => {
+			try {
+				const response = await fetch(
+					"http://localhost:4001/api/connection-requests",
+					{
+						credentials: "include",
+					}
+				);
+				const data = await response.json();
+				console.log(data);
+				if (data.errors) {
+					setRequests([]);
+				} else {
+					setRequests(data.data);
+				}
+			} catch (err) {
+				setRequests([]);
+				setError(err.message);
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchRequests();
+	}, []);
 
-    const handleAccept = async (fromId) => {
-        try {
-            await api.put("http://localhost:4001/api/connection-requests", {
-                fromId,
-                action: "accept",
-            });
-            setRequests((prevRequests) => prevRequests.filter((req) => req.from.id !== fromId));
-            setSuccessMessage("Connection request accepted successfully.");
-            setSnackbarVisible(true);
-        } catch (err) {
-            setError(`Failed to accept connection request: ${err.message}`);
-        }
-    };
+	const handleAccept = async (fromId) => {
+		try {
+			await api.put("/connection-requests", {
+				fromId,
+				action: "accept",
+			});
+			setRequests((prev) => prev.filter((req) => req.from.id !== fromId));
+			setSnackbarMessage({
+				text: "Connection request accepted",
+				type: "success",
+			});
+			setSnackbarVisible(true);
+		} catch (err) {
+			setSnackbarMessage({
+				text: "Failed to accept request",
+				type: "error",
+			});
+			setSnackbarVisible(true);
+		}
+	};
 
-    const handleDecline = async (fromId) => {
-        try {
-            await api.put("http://localhost:4001/api/connection-requests", {
-                fromId,
-                action: "decline",
-            });
-            setRequests((prevRequests) => prevRequests.filter((req) => req.from.id !== fromId));
-            setSuccessMessage("Connection request declined successfully.");
-            setSnackbarVisible(true);
-        } catch (err) {
-            setError(`Failed to decline connection request: ${err.message}`);
-        }
-    };
+	const handleIgnore = async (fromId) => {
+		try {
+			await api.put("/connection-requests", {
+				fromId,
+				action: "decline",
+			});
+			setRequests((prev) => prev.filter((req) => req.from.id !== fromId));
+			setSnackbarMessage({
+				text: "Connection request ignored",
+				type: "success",
+			});
+			setSnackbarVisible(true);
+		} catch (err) {
+			setSnackbarMessage({
+				text: "Failed to ignore request",
+				type: "error",
+			});
+			setSnackbarVisible(true);
+		}
+	};
 
-    const handleCloseSnackbar = () => {
-        setSnackbarVisible(false);
-    };
+	if (loading) return <div>Loading...</div>;
+	if (error) return <div>Error: {error}</div>;
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return (
-        <div style={{ color: "red", textAlign: "center", fontSize: "18px" }}>{error}</div>
-    );
+	return (
+		<div style={styles.container}>
+			<div style={styles.header}>
+				<h1 style={styles.title}>Pending Invitations</h1>
+				<p style={styles.subtitle}>
+					{requests.length} pending connection request
+					{requests.length !== 1 && "s"}
+				</p>
+			</div>
 
-    return (
-        <div style={styles.page}>
-            <h1 style={styles.header}>Connection Requests</h1>
-            <ul style={styles.list}>
-                {requests.map((request) => (
-                    <li key={request.from.id} style={styles.item}>
-                        <img src={request.from.profile_photo_path} alt={request.from.username} style={styles.photo} />
-                        <div style={styles.info}>
-                            <p style={styles.fullName}>{request.from.full_name}</p>
-                            <p style={styles.username}>{request.from.username}</p>
-                            <p style={styles.date}>Requested on: {new Date(request.created_at).toLocaleString()}</p>
-                        </div>
-                        <button
-                            style={{ ...styles.button, ...styles.acceptButton }}
-                            onClick={() => handleAccept(request.from.id)}
-                        >
-                            Accept
-                        </button>
-                        <button
-                            style={{ ...styles.button, ...styles.declineButton }}
-                            onClick={() => handleDecline(request.from.id)}
-                        >
-                            Decline
-                        </button>
-                    </li>
-                ))}
-            </ul>
-            {snackbarVisible && <Snackbar message={successMessage} onClose={handleCloseSnackbar} />}
-        </div>
-    );
+			{requests.length === 0 ? (
+				<div style={styles.emptyState}>
+					<UserPlus size={48} style={styles.emptyIcon} />
+					<p style={styles.emptyText}>No pending connection requests</p>
+				</div>
+			) : (
+				<div style={styles.grid}>
+					{requests.map((request) => (
+						<div key={request.from.id} style={styles.card}>
+							<div style={styles.profileSection}>
+								<img
+									src={request.from.profile_photo_path}
+									alt={request.from.username}
+									style={styles.avatar}
+								/>
+								<div style={styles.info}>
+									<h2 style={styles.name}>{request.from.full_name}</h2>
+									<p style={styles.username}>@{request.from.username}</p>
+									<p style={styles.date}>
+										Requested{" "}
+										{new Date(request.created_at).toLocaleDateString()}
+									</p>
+								</div>
+							</div>
+
+							<div style={styles.actions}>
+								<button
+									style={{ ...styles.button, ...styles.acceptButton }}
+									onClick={() => handleAccept(request.from.id)}
+								>
+									<Check size={16} />
+									Accept
+								</button>
+								<button
+									style={{ ...styles.button, ...styles.ignoreButton }}
+									onClick={() => handleIgnore(request.from.id)}
+								>
+									<X size={16} />
+									Ignore
+								</button>
+							</div>
+						</div>
+					))}
+				</div>
+			)}
+
+			{snackbarVisible && (
+				<Snackbar
+					message={snackbarMessage.text}
+					type={snackbarMessage.type}
+					onClose={() => setSnackbarVisible(false)}
+				/>
+			)}
+		</div>
+	);
 };
 
 export default ConnectionRequestsPage;
-
-// import React from "react";
-// import api from "../../api";
-
-// const SimplePostRequestPage = () => {
-//     const sendPostRequest = async () => {
-//         try {
-//             const response = await api.post("http://localhost:4001/api/connection-requests", {
-//                 toId: 13
-//             });
-//             console.log("Post request successful:", response.data);
-//         } catch (err) {
-//             console.error("Failed to send post request:", err.message);
-//         }
-//     };
-
-//     return (
-//         <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', textAlign: 'center' }}>
-//             <h1>Simple Post Request Page</h1>
-//             <button onClick={sendPostRequest} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer' }}>
-//                 Send Post Request
-//             </button>
-//         </div>
-//     );
-// };
-
-// export default SimplePostRequestPage;

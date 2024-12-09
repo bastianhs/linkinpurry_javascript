@@ -21,7 +21,10 @@ const login = async (req, res) => {
 
 	try {
 		const loginDto = new LoginRequestDTO(req.body);
-		const user = await userModel.getUserByEmailOrUsername(loginDto.email,loginDto.email);
+		const user = await userModel.getUserByEmailOrUsername(
+			loginDto.email,
+			loginDto.email
+		);
 
 		if (!user) {
 			return res.status(401).json(BaseResponseDTO.error("Email not found"));
@@ -29,7 +32,11 @@ const login = async (req, res) => {
 
 		const isPasswordValid = await bcrypt.compare(password, user.password_hash);
 		if (!isPasswordValid) {
-			return res.status(401).json(BaseResponseDTO.error("Invalid credentials", "Incorrect password"));
+			return res
+				.status(401)
+				.json(
+					BaseResponseDTO.error("Invalid credentials", "Incorrect password")
+				);
 		}
 
 		const payload = {
@@ -166,12 +173,15 @@ const register = async (req, res) => {
 
 const logout = async (req, res) => {
 	try {
-		// clear the token cookie
-		res.clearCookie("token", {
+		const cookieOptions = {
 			httpOnly: true,
-			sameSite: "none",
 			secure: process.env.NODE_ENV === "production",
-		});
+			sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+			path: "/",
+			domain: "localhost",
+			expires: new Date(0), 
+		};
+		res.clearCookie("token", cookieOptions);
 
 		return res.status(200).json({
 			success: true,

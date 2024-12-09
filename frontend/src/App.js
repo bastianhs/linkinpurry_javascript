@@ -17,6 +17,7 @@ import ContactPage from "./Pages/Contact/ContactPage";
 import SupportPage from "./Pages/SupportPage/SupportPage";
 import { useEffect, useState } from "react";
 import AboutPage from "./Components/About/AboutPage";
+import OtherUserProfile from "./Pages/ProfilePage/OtherUserProfilePage";
 
 function App() {
 	const [isScrolled, setIsScrolled] = useState(false);
@@ -62,6 +63,7 @@ function App() {
 													element={<ConnectionsPage />}
 												/>
 												<Route path="/chat" element={<ChatPage />} />
+												<Route path="/chat/:id" element={<ChatPage />} />
 												<Route path="/" element={<FeedPage />} />
 												<Route path="/home" element={<FeedPage />} />
 												<Route path="/contact" element={<ContactPage />} />

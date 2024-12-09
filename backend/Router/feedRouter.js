@@ -3,7 +3,7 @@ import { authenticate } from "../Middleware/authenticate.js";
 import feedController from "../Controller/feedController.js";
 
 const router = express();
-
+router.get("/:user_id/profile", authenticate, feedController.getFeedByUserID);
 router.get("/", authenticate, feedController.getFeed);
 router.post("/", authenticate, feedController.createFeed);
 router.put("/:post_id", authenticate, feedController.updateFeed);
