@@ -110,18 +110,47 @@ const getMessages = async (req, res) => {
 
 const createChat = async (req, res) => {
 	try {
+		const fromId = req.user.userId;
+		const { to_id } = req.body;
+
 		const chatDto = new ChatRequestDTO({
 			from_id: req.user.userId,
 			to_id: req.body.to_id,
 			message: req.body.message,
 		});
+		if (!to_id) {
+			return res.status(400).json({ error: "Recipient ID is required" });
+		}
 
-		const newChat = await chatModel.createChat(chatDto);
-		const responseDto = new ChatResponseDTO(newChat);
+		// console.log(existingChat);
 
-		return res.status(201).json(BaseResponseDTO.success(responseDto));
+		const newChat = await prisma.chat.create({
+			data: {
+				from_id: fromId,
+				to_id: to_id,
+				message: "Started a conversation",
+			},
+			include: {
+				users_chat_from_idTousers: true,
+				users_chat_to_idTousers: true,
+			},
+		});
+
+		const formattedNewChat = {
+			id: newChat.id.toString(),
+			message: newChat.message,
+			timestamp: newChat.timestamp,
+			otherUser: {
+				...newChat.users_chat_to_idTousers,
+				id: newChat.users_chat_to_idTousers.id.toString(),
+			},
+		};
+
+		res.status(201).json(formattedNewChat);
 	} catch (error) {
-		return res.status(500).json(BaseResponseDTO.error("Failed to create chat"));
+		console.error("Create chat error:", error);
+		res.status(500).json({ error: "Failed to create chat" });
 	}
 };
+
 export { getChatsByUser, getMessages, createChat };

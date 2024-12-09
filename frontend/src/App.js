@@ -12,7 +12,7 @@ import ChatPage from "./Pages/Chat/ChatPage";
 import FeedPage from "./Pages/Feed/FeedPage";
 import NotFoundPage from "./Pages/NotFound/NotFoundPage";
 import Header from "./Components/Layout/Header";
-import Footer from "./Components/Layout/Footer"
+import Footer from "./Components/Layout/Footer";
 import ContactPage from "./Pages/Contact/ContactPage";
 import SupportPage from "./Pages/SupportPage/SupportPage";
 import { useEffect, useState } from "react";
@@ -61,6 +61,7 @@ function App() {
 												/>
 												<Route path="/chat" element={<ChatPage />} />
 												<Route path="/" element={<FeedPage />} />
+												<Route path="/home" element={<FeedPage />} />
 												<Route path="/contact" element={<ContactPage />} />
 												<Route path="/support" element={<SupportPage />} />
 												<Route path="/about" element={<AboutPage />} />

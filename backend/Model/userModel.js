@@ -38,6 +38,8 @@ const createUser = async (username, email, full_name, password_hash) => {
 			email,
 			password_hash,
 			full_name,
+			work_history: "",
+			skills:"",
 			profile_photo_path,
 			created_at: new Date(),
 			updated_at: new Date(),

@@ -1,14 +1,7 @@
 import express from "express";
-import router from "./Router/router.js";
 import database from "./database/db_connector.js";
 import {errorHandler} from "./Middleware/errorHandler.js";
 import cookieParser from "cookie-parser";
-import authRouter from "./Router/authRouter.js";
-import userRouter from "./Router/userRouter.js";
-import connectionRequestRouter from "./Router/connectionRequestRouter.js";
-import connectionRouter from "./Router/connectionRouter.js";
-import chatRouter from "./Router/chatRouter.js";
-import feedRouter from "./Router/feedRouter.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import http from "http";
@@ -46,7 +39,7 @@ database.connectDB();
 app.use(express.json());
 app.use(cookieParser());
 
-// app.js
+// Swagger
 const swaggerOptions = {
 	definition: {
 		openapi: "3.0.0",
@@ -97,14 +90,25 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 // Routes
 
-// app.use("/", router);
 app.use("/api", indexRouter);
-app.use("/api/profile", router);
-app.use("/api/users", userRouter);
-app.use("/api/connection-requests", connectionRequestRouter);
-app.use("/api/connections", connectionRouter);
-app.use("/api/chats", chatRouter);
-app.use("/api/feed", feedRouter);
+
+
+app.get('/health', async (req, res) => {
+  try {
+    await database.client.query('SELECT 1');
+    
+    res.status(200).json({ 
+      status: 'healthy',
+      database: 'connected',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'unhealthy',
+      error: error.message 
+    });
+  }
+});
 
 
 
