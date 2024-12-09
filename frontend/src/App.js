@@ -15,6 +15,7 @@ import Footer from "./Components/Layout/Footer"
 import ContactPage from "./Pages/Contact/ContactPage";
 import SupportPage from "./Pages/SupportPage/SupportPage";
 import { useEffect, useState } from "react";
+import AboutPage from "./Components/About/AboutPage";
 
 function App() {
 	const [isScrolled, setIsScrolled] = useState(false);
@@ -36,6 +37,7 @@ function App() {
 						{/* Public Routes - No Header/Footer */}
 						<Route path="/register" element={<RegisterPage />} />
 						<Route path="/login" element={<LoginPage />} />
+
 
 						{/* Protected Routes */}
 						<Route
@@ -62,6 +64,7 @@ function App() {
 												<Route path="/" element={<UsersPage />} />  {/* this should be feeds route */}	
 												<Route path="/contact" element={<ContactPage />} />
 												<Route path="/support" element={<SupportPage />} />
+												<Route path="/about" element={<AboutPage />} />
 												<Route path="*" element={<NotFoundPage />} />
 											</Routes>
 										</main>
