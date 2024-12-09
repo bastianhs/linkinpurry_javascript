@@ -9,6 +9,7 @@ import userRouter from "./Router/userRouter.js";
 import connectionRequestRouter from "./Router/connectionRequestRouter.js";
 import connectionRouter from "./Router/connectionRouter.js";
 import chatRouter from "./Router/chatRouter.js";
+import feedRouter from "./Router/feedRouter.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import http from 'http';
@@ -42,6 +43,7 @@ app.use("/api/users", userRouter);
 app.use("/api/connection-requests", connectionRequestRouter);
 app.use("/api/connections", connectionRouter);
 app.use("/api/chats", chatRouter);
+app.use("/api/feed", feedRouter);
 
 // Error handler
 app.use(errorHandler);

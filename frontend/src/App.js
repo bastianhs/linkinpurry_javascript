@@ -9,6 +9,7 @@ import "./App.css";
 import { AuthProvider } from "./Context/authContext";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import ChatPage from "./Pages/Chat/ChatPage";
+import FeedPage from "./Pages/Feed/FeedPage";
 
 function App() {
 	return (
@@ -54,18 +55,18 @@ function App() {
 						}
 					/>
 					<Route
-						path="/connections/:userId"
-						element={
-							<ProtectedRoute>
-								<ConnectionsPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
 						path="/chat"
 						element={
 							<ProtectedRoute>
 								<ChatPage />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/feed"
+						element={
+							<ProtectedRoute>
+								<FeedPage />
 							</ProtectedRoute>
 						}
 					/>
