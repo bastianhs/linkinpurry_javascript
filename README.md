@@ -52,15 +52,15 @@ http://localhost:4001/api-docs/
 ### Server-side  
 Authentication dan Authorization: 13522001  
 Profil Pengguna: 13522008  
-Koneksi antar pengguna: 13522034  
-Feed: 13522034  
+Koneksi antar pengguna: 13522034 13522001 13522008
+Feed: 13522034  13522001
 Chat dan websocket: 13522001  
 Notifikasi: 13522008  
 
 ### Client-side  
 Authentication dan Authorization: 13522001  
 Profil Pengguna: 13522008  
-Koneksi antar pengguna: 13522034  
-Feed: 13522034  
+Koneksi antar pengguna: 13522034 13522001 13522008
+Feed: 13522034  13522001
 Chat dan websocket: 13522001  
 Notifikasi: 13522008  

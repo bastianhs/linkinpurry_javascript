@@ -11,6 +11,7 @@ RUN npm rebuild bcrypt --build-from-source
 # Expose the port that the backend will run on (e.g., 3000)
 EXPOSE 4001
 RUN chown -R node:node /app
+RUN npx prisma generate
 USER node
 # Command to run the backend (adjust as necessary)
 CMD ["npm", "run", "start"]
