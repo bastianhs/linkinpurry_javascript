@@ -50,6 +50,7 @@ function App() {
 										/>
 										<main className="main-content">
 											<Routes>
+												<Route path="/profile/:id" element={<MyProfile />} />
 												<Route path="/profile" element={<MyProfile />} />
 												<Route
 													path="/profile/:username"

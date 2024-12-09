@@ -137,11 +137,35 @@ router.post("/", async (req, res) => {
 	}
 });
 
+// Update an existing profile
+router.put("/:id", authenticate, upload.single('profile_photo'), async (req, res) => {
+  try {
+    const logged_id = req.user?.userId || null;
+    const { username, email, password, work_history, skills } = req.body;
+    const { id } = req.params;
+    const profile_photo = req.file ? req.file.path : null;
 
+    if (logged_id != id) {
+      return res.status(401).json({ message: "not your account, please login." });
+    }
+
+    const updatedProfile = await updateProfile(id, username, email, password, work_history, skills, profile_photo);
+    res.json(updatedProfile);
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(400).json({ error: "Internal server error" });
+  }
+});
 router.get("/other/:username", profileAuthenticate, async (req, res) => {
 	try {
 		const { username } = req.params;
 
+    const updatedProfile = await updateProfile(id, full_name, username, email, password, work_history, skills, profile_photo);
+    res.json(updatedProfile);
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(400).json({ error: "Internal server error" });
+  }try{
 		if (!username) {
 			console.log(!username);
 			return res.status(400).json({

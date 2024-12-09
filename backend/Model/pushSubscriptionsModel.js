@@ -15,6 +15,10 @@ export const deletePushSubscription = async (endpoint) => {
 		where: { endpoint },
 	});
 };
-
-const pushSubscriptionModel = {getPushSubscriptions,createPushSubscription,deletePushSubscription};
+export const getUserSubscription = async (user_id) => {
+	return await prisma.push_subscriptions.findMany({
+		where: { user_id },
+	});
+}
+const pushSubscriptionModel = {getPushSubscriptions,createPushSubscription,deletePushSubscription, getUserSubscription};
 export default pushSubscriptionModel;

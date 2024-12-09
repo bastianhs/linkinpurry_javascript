@@ -72,6 +72,30 @@ export async function createProfile(name, email, password) {
 	}
 }
 
+export async function updateProfile(id,full_name, username, email, password, work_history, skills, profile_photo) {
+	try {
+	  const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
+	  const query = `
+		UPDATE users
+		SET 
+		  username = COALESCE($1, username),
+		  email = COALESCE($2, email),
+		  full_name = COALESCE($8, full_name),
+		  password_hash = COALESCE($3, password_hash),
+		  work_history = COALESCE($4, work_history),
+		  skills = COALESCE($5, skills),
+		  profile_photo_path = COALESCE($6, profile_photo_path),
+		  updated_at = NOW()
+		  
+		WHERE id = $7
+		RETURNING *`;
+	  const values = [username, email, hashedPassword, work_history, skills, profile_photo, id, full_name];
+	  const result = await client.query(query, values);
+	  return result.rows[0];
+	} catch (error) {
+	  throw new Error(`Failed to update profile: ${error.message}`);
+	}
+}
 export const updateProfileData = async (req, res) => {
 	try {
 		console.log("Updated profile:");

@@ -1,7 +1,8 @@
 import prisma from "../database/prismaClient.js";
 import { BaseResponseDTO } from "../Dto/baseDto.js";
 import { ChatRequestDTO, ChatResponseDTO } from "../Dto/chatDto.js";
-
+import sendNotification from "../Util/pushNotification.js";
+import {getUserSubscription} from '../Model/pushSubscriptionsModel.js';
 const formatUser = (user) => ({
 	id: user.id.toString(),
 	username: user.username,
@@ -147,12 +148,23 @@ const createChat = async (req, res) => {
 		};
 
 		res.status(201).json(formattedNewChat);
+		const subscriptions = await getUserSubscription(to_id);
+		const payload = {
+		  title: 'New Message',
+		  body: `${newChat.users_chat_from_idTousers.username}: ${newChat.message}`,
+		  url: `/chat/${newChat.id}`
+		};
+	
+		subscriptions.forEach(subscription => {
+		  sendNotification(subscription, payload);
+		});
+	
+		res.status(201).json(formattedNewChat);
 	} catch (error) {
 		console.error("Create chat error:", error);
 		res.status(500).json({ error: "Failed to create chat" });
 	}
 };
-import sendNotification from '../Util/pushNotification.js';
 
 const newMessageHandler = async (message) => {
   const payload = {

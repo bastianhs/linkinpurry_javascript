@@ -1,9 +1,10 @@
 import express from 'express';
 import { createPushSubscription } from '../Model/pushSubscriptionsModel.js';
+import { authenticate } from '../Middleware/authenticate.js';
 
 const router = express.Router();
 
-router.post('/subscribe', async (req, res) => {
+router.post('/subscribe',authenticate, async (req, res) => {
   const subscription = req.body;
   const userId = req.user.id; // Assuming you have user authentication
 
