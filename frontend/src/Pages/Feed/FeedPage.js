@@ -1,257 +1,296 @@
 import React, { useState, useEffect, useCallback } from "react";
-
-const styles = {
-    feedPage: {
-        maxWidth: "600px",
-        margin: "0 auto",
-        padding: "20px",
-        fontFamily: "Arial, sans-serif",
-    },
-    createPost: {
-        marginBottom: "20px",
-    },
-    textarea: {
-        width: "100%",
-        height: "100px",
-        padding: "10px",
-        border: "1px solid #ccc",
-        borderRadius: "5px",
-        resize: "none",
-    },
-    button: {
-        marginTop: "10px",
-        padding: "10px 20px",
-        backgroundColor: "#0073b1",
-        color: "white",
-        border: "none",
-        borderRadius: "5px",
-        cursor: "pointer",
-    },
-    buttonHover: {
-        backgroundColor: "#005582",
-    },
-    feedList: {
-        marginTop: "20px",
-    },
-    feedItem: {
-        backgroundColor: "white",
-        padding: "15px",
-        border: "1px solid #ddd",
-        borderRadius: "5px",
-        marginBottom: "10px",
-    },
-    feedHeader: {
-        display: "flex",
-        alignItems: "center",
-        marginBottom: "10px",
-    },
-    profilePhoto: {
-        width: "50px",
-        height: "50px",
-        borderRadius: "50%",
-        marginRight: "10px",
-    },
-    userName: {
-        fontWeight: "bold",
-        margin: "0",
-    },
-    postDate: {
-        fontSize: "0.8em",
-        color: "#777",
-        margin: "0",
-    },
-    feedContent: {
-        margin: "10px 0",
-    },
-    feedActions: {
-        marginTop: "10px",
-    },
-    actionButton: {
-        marginRight: "10px",
-        padding: "5px 10px",
-        backgroundColor: "#0073b1",
-        color: "white",
-        border: "none",
-        borderRadius: "5px",
-        cursor: "pointer",
-    },
-    actionButtonHover: {
-        backgroundColor: "#005582",
-    },
-};
+import api from "../../Utils/api";
 
 const FeedPage = () => {
-    const [feeds, setFeeds] = useState([]);
-    const [cursor, setCursor] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [hasMore, setHasMore] = useState(true);
-    const [newPostContent, setNewPostContent] = useState("");
-    const [currentUserId, setCurrentUserId] = useState(null);
+	const [feeds, setFeeds] = useState([]);
+	const [cursor, setCursor] = useState(null);
+	const [loading, setLoading] = useState(false);
+	const [hasMore, setHasMore] = useState(true);
+	const [newPostContent, setNewPostContent] = useState("");
+	const [currentUserId, setCurrentUserId] = useState(null);
 
-    const fetchFeeds = useCallback(async () => {
-        console.log("fetchFeeds called");
-        if (loading || !hasMore) return;
-        setLoading(true);
-        try {
-            const cursorQueryParams = cursor ? `cursor=${cursor}&` : "";
-            const response = await fetch(`http://localhost:4001/api/feed?${cursorQueryParams}limit=10`, {
-                credentials: "include",
-            });
-            const data = await response.json();
-            const { feeds: newFeeds, cursor: newCursor, currentUserId: newCurrentUserId } = data.body;
-            setFeeds((prevFeeds) => [...prevFeeds, ...newFeeds]);
-            setCursor(newCursor);
-            setHasMore(newCursor !== null);
-            setCurrentUserId(newCurrentUserId);
-        } catch (error) {
-            console.error("Failed to fetch feeds", error);
-        } finally {
-            setLoading(false);
-        }
-    }, [cursor, loading, hasMore]);
+	const styles = {
+		container: {
+			maxWidth: "680px",
+			margin: "0 auto",
+			padding: "24px 16px",
+			backgroundColor: "#f3f2ef",
+			minHeight: "100vh",
+			"@media (max-width: 768px)": {
+				padding: "16px",
+			},
+		},
+		createPostCard: {
+			backgroundColor: "white",
+			borderRadius: "8px",
+			padding: "24px",
+			marginBottom: "16px",
+			boxShadow: "0 0 0 1px rgba(0,0,0,0.08)",
+		},
+		textareaWrapper: {
+			position: "relative",
+		},
+		textarea: {
+			width: "100%",
+			minHeight: "96px",
+			padding: "12px",
+			border: "1px solid rgba(0,0,0,0.08)",
+			borderRadius: "4px",
+			fontSize: "16px",
+			resize: "none",
+			outline: "none",
+			marginBottom: "8px",
+		},
+		charCount: {
+			position: "absolute",
+			right: "12px",
+			bottom: "24px",
+			fontSize: "12px",
+			color: "rgba(0,0,0,0.6)",
+		},
+		postButton: {
+			padding: "6px 16px",
+			backgroundColor: "#0a66c2",
+			color: "white",
+			border: "none",
+			borderRadius: "16px",
+			fontSize: "16px",
+			fontWeight: "600",
+			cursor: "pointer",
+			transition: "background-color 0.2s",
+		},
+		postButtonDisabled: {
+			backgroundColor: "rgba(0,0,0,0.08)",
+			cursor: "not-allowed",
+		},
+		feedList: {
+			display: "flex",
+			flexDirection: "column",
+			gap: "8px",
+		},
+		feedCard: {
+			backgroundColor: "white",
+			borderRadius: "8px",
+			padding: "24px",
+			boxShadow: "0 0 0 1px rgba(0,0,0,0.08)",
+		},
+		postHeader: {
+			display: "flex",
+			gap: "12px",
+			marginBottom: "16px",
+		},
+		avatar: {
+			width: "48px",
+			height: "48px",
+			borderRadius: "50%",
+			objectFit: "cover",
+		},
+		userInfo: {
+			flex: 1,
+		},
+		userName: {
+			fontSize: "16px",
+			fontWeight: "600",
+			color: "rgba(0,0,0,0.9)",
+			marginBottom: "4px",
+		},
+		userUsername: {
+			fontSize: "14px",
+			color: "rgba(0,0,0,0.6)",
+			marginBottom: "4px",
+		},
+		postTime: {
+			fontSize: "12px",
+			color: "rgba(0,0,0,0.6)",
+		},
+		postContent: {
+			fontSize: "14px",
+			lineHeight: "1.5",
+			color: "rgba(0,0,0,0.9)",
+			marginBottom: "16px",
+			whiteSpace: "pre-wrap",
+			wordBreak: "break-word",
+		},
+		actionButtons: {
+			display: "flex",
+			gap: "8px",
+		},
+		actionButton: {
+			padding: "6px 16px",
+			backgroundColor: "transparent",
+			border: "1px solid rgba(0,0,0,0.6)",
+			borderRadius: "16px",
+			fontSize: "14px",
+			fontWeight: "600",
+			color: "rgba(0,0,0,0.6)",
+			cursor: "pointer",
+			transition: "all 0.2s",
+		},
+		loadingText: {
+			textAlign: "center",
+			padding: "20px",
+			color: "rgba(0,0,0,0.6)",
+		},
+	};
 
-    const handleCreatePost = async () => {
-        if (newPostContent.length > 280) {
-            alert("Post content exceeds 280 characters");
-            return;
-        }
-        try {
-            await fetch("http://localhost:4001/api/feed", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include",
-                body: JSON.stringify({ content: newPostContent }),
-            });
-            setNewPostContent("");
-            setFeeds([]);
-            setCursor(null);
-            setHasMore(true);
-            fetchFeeds();
-        } catch (error) {
-            console.error("Failed to create post", error);
-        }
-    };
+	const fetchFeeds = useCallback(async () => {
+		if (loading || !hasMore) return;
+		setLoading(true);
+		try {
+			const response = await api.get(
+				`/feed?${cursor ? `cursor=${cursor}&` : ""}limit=10`
+			);
+			const {
+				feeds: newFeeds,
+				cursor: newCursor,
+				currentUserId: newCurrentUserId,
+			} = response.data.body;
 
-    const handleUpdatePost = async (postId, content) => {
-        if (content === null) return;
-        try {
-            const response = await fetch(`http://localhost:4001/api/feed/${postId}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include",
-                body: JSON.stringify({ content }),
-            });
-            const updatedPost = await response.json();
-            setFeeds((prevFeeds) =>
-                prevFeeds.map((feed) => (feed.id === postId ? { ...feed, ...updatedPost.body } : feed))
-            );
-        } catch (error) {
-            console.error("Failed to update post", error);
-        }
-    };
+			setFeeds((prev) => [...prev, ...newFeeds]);
+			setCursor(newCursor);
+			setHasMore(newCursor !== null);
+			setCurrentUserId(newCurrentUserId);
+		} catch (error) {
+			console.error("Failed to fetch feeds:", error);
+		} finally {
+			setLoading(false);
+		}
+	}, [cursor, loading, hasMore]);
 
-    const handleDeletePost = async (postId) => {
-        console.log("delete post", postId);
-        try {
-            await fetch(`http://localhost:4001/api/feed/${postId}`, {
-                method: "DELETE",
-                credentials: "include",
-            });
-            setFeeds((prevFeeds) => prevFeeds.filter((feed) => feed.id !== postId));
-            setNewPostContent("");
-            setFeeds([]);
-            setCursor(null);
-            setHasMore(true);
-            fetchFeeds();
-        } catch (error) {
-            console.error("Failed to delete post", error);
-        }
-    };
+	const createPost = async () => {
+		if (!newPostContent.trim()) return;
+		try {
+			await api.post("/feed", { content: newPostContent });
+			setNewPostContent("");
+			setFeeds([]);
+			setCursor(null);
+			setHasMore(true);
+			fetchFeeds();
+		} catch (error) {
+			console.error("Failed to create post:", error);
+		}
+	};
 
-    const handleScroll = useCallback(() => {
-        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 1) {
-            fetchFeeds();
-        }
-    }, [fetchFeeds]);
+	const updatePost = async (postId, content) => {
+		try {
+			await api.put(`/feed/${postId}`, { content });
+			setFeeds((prev) =>
+				prev.map((feed) =>
+					feed.id === postId
+						? { ...feed, content, updated_at: new Date().toISOString() }
+						: feed
+				)
+			);
+		} catch (error) {
+			console.error("Failed to update post:", error);
+		}
+	};
 
-    useEffect(() => {
-        fetchFeeds();
-    }, []);
+	const deletePost = async (postId) => {
+		try {
+			await api.delete(`/feed/${postId}`);
+			setFeeds((prev) => prev.filter((feed) => feed.id !== postId));
+		} catch (error) {
+			console.error("Failed to delete post:", error);
+		}
+	};
 
-    useEffect(() => {
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, [handleScroll]);
+	const handleScroll = useCallback(() => {
+		if (
+			window.innerHeight + window.scrollY >=
+			document.documentElement.scrollHeight - 100
+		) {
+			fetchFeeds();
+		}
+	}, [fetchFeeds]);
 
-    return (
-        <div style={styles.feedPage}>
-            <h1>Feed Page</h1>
-            <div style={styles.createPost}>
-                <textarea
-                    value={newPostContent}
-                    onChange={(e) => setNewPostContent(e.target.value)}
-                    maxLength={280}
-                    placeholder="What's on your mind?"
-                    style={styles.textarea}
-                />
-                <button
-                    onClick={handleCreatePost}
-                    style={styles.button}
-                    onMouseOver={(e) => e.target.style.backgroundColor = styles.buttonHover.backgroundColor}
-                    onMouseOut={(e) => e.target.style.backgroundColor = styles.button.backgroundColor}
-                >
-                    Post
-                </button>
-            </div>
-            <div style={styles.feedList}>
-                {feeds.map(feed => (
-                    feed && (
-                        <div key={feed.id} style={styles.feedItem}>
-                            {feed.user && (
-                                <div style={styles.feedHeader}>
-                                    <img src={feed.user.profile_photo_path || "/default-avatar.png"} alt="Profile" style={styles.profilePhoto} />
-                                    <div>
-                                        <p style={styles.userName}>{feed.user.full_name} (@{feed.user.username})</p>
-                                        <p style={styles.postDate}>Posted on: {new Date(feed.created_at).toLocaleString()}</p>
-                                        <p style={styles.postDate}>Updated on: {new Date(feed.updated_at).toLocaleString()}</p>
-                                    </div>
-                                </div>
-                            )}
-                            <p style={styles.feedContent}>{feed.content}</p>
-                            {feed.user && feed.user.id === currentUserId && (
-                                <div style={styles.feedActions}>
-                                    <button
-                                        onClick={() => {
-                                            const newContent = prompt("Edit your post", feed.content);
-                                            handleUpdatePost(feed.id, newContent);
-                                        }}
-                                        style={styles.actionButton}
-                                        onMouseOver={(e) => e.target.style.backgroundColor = styles.actionButtonHover.backgroundColor}
-                                        onMouseOut={(e) => e.target.style.backgroundColor = styles.actionButton.backgroundColor}
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeletePost(feed.id)}
-                                        style={styles.actionButton}
-                                        onMouseOver={(e) => e.target.style.backgroundColor = styles.actionButtonHover.backgroundColor}
-                                        onMouseOut={(e) => e.target.style.backgroundColor = styles.actionButton.backgroundColor}
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    )
-                ))}
-            </div>
-            {loading && <p>Loading...</p>}
-        </div>
-    );
+	useEffect(() => {
+		fetchFeeds();
+	}, []);
+
+	useEffect(() => {
+		window.addEventListener("scroll", handleScroll);
+		return () => window.removeEventListener("scroll", handleScroll);
+	}, [handleScroll]);
+
+	return (
+		<div style={styles.container}>
+			<div style={styles.createPostCard}>
+				<div style={styles.textareaWrapper}>
+					<textarea
+						value={newPostContent}
+						onChange={(e) => setNewPostContent(e.target.value)}
+						placeholder="What do you want to talk about?"
+						maxLength={280}
+						style={styles.textarea}
+					/>
+					<span style={styles.charCount}>{newPostContent.length}/280</span>
+				</div>
+				<button
+					onClick={createPost}
+					disabled={!newPostContent.trim() || loading}
+					style={{
+						...styles.postButton,
+						...(!newPostContent.trim() && styles.postButtonDisabled),
+					}}
+				>
+					Post
+				</button>
+			</div>
+
+			<div style={styles.feedList}>
+				{feeds.map((feed) => (
+					<div key={feed.id} style={styles.feedCard}>
+						<div style={styles.postHeader}>
+							<img
+								src={feed.user.profile_photo_path || "/default-avatar.png"}
+								alt={feed.user.username}
+								style={styles.avatar}
+							/>
+							<div style={styles.userInfo}>
+								<h3 style={styles.userName}>{feed.user.full_name}</h3>
+								<p style={styles.userUsername}>@{feed.user.username}</p>
+								<p style={styles.postTime}>
+									{feed.updated_at !== feed.created_at
+										? `Edited ${new Date(feed.updated_at).toLocaleString()}`
+										: new Date(feed.created_at).toLocaleString()}
+								</p>
+							</div>
+						</div>
+
+						<p style={styles.postContent}>{feed.content}</p>
+
+						{feed.user.id === currentUserId && (
+							<div style={styles.actionButtons}>
+								<button
+									onClick={() => {
+										const newContent = prompt("Edit your post:", feed.content);
+										if (newContent && newContent !== feed.content) {
+											updatePost(feed.id, newContent);
+										}
+									}}
+									style={styles.actionButton}
+								>
+									Edit
+								</button>
+								<button
+									onClick={() => {
+										if (window.confirm("Delete this post?")) {
+											deletePost(feed.id);
+										}
+									}}
+									style={styles.actionButton}
+								>
+									Delete
+								</button>
+							</div>
+						)}
+					</div>
+				))}
+				{loading && <div style={styles.loadingText}>Loading more posts...</div>}
+			</div>
+		</div>
+	);
 };
 
 export default FeedPage;

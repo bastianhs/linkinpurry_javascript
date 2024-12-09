@@ -34,8 +34,29 @@ export async function getProfile(id) {
 	  }
 	  throw new Error(`Failed to fetch profile: ${error.message}`);
 	}
-  }
+}
+export async function getOtherProfile(username) {
+	try {
+		if (!username) {
+			throw new Error("Invalid username format");
+		}
+		const userId = username;
 
+		const query = "SELECT * FROM users WHERE username = $1";
+		const values = [userId];
+		const result = await client.query(query, values);
+
+		if (result.rows.length === 0) {
+			throw new Error("User not found");
+		}
+		return result.rows;
+	} catch (error) {
+		if (error.message.includes("invalid input syntax")) {
+			throw new Error("Invalid user ID format");
+		}
+		throw new Error(`Failed to fetch profile: ${error.message}`);
+	}
+}
 export async function createProfile(name, email, password) {
 	try {
 		const hashedPassword = await bcrypt.hash(password, 10);
@@ -49,28 +70,49 @@ export async function createProfile(name, email, password) {
 	}
 }
 
-export async function updateProfile(id, username, email, password, work_history, skills, profile_photo) {
+export const updateProfileData = async (req, res) => {
 	try {
-	  const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
-	  const query = `
-		UPDATE users
-		SET 
-		  username = COALESCE($1, username),
-		  email = COALESCE($2, email),
-		  password_hash = COALESCE($3, password_hash),
-		  work_history = COALESCE($4, work_history),
-		  skills = COALESCE($5, skills),
-		  profile_photo_path = COALESCE($6, profile_photo_path),
-		  updated_at = NOW()
-		WHERE id = $7
-		RETURNING *`;
-	  const values = [username, email, hashedPassword, work_history, skills, profile_photo, id];
-	  const result = await client.query(query, values);
-	  return result.rows[0];
+		console.log("Updated profile:");
+		const userId = req.user.userId;
+		const { username, email, password, work_history, skills, full_name } =
+			req.body;
+		if (!userId) {
+			return res.status(400).json({
+				success: false,
+				error: "Invalid user ID",
+			});
+		}
+		const updateData = {
+			...(username && { username }),
+			...(email && { email }),
+			...(password && { password }),
+			...(work_history && { work_history }),
+			...(skills && { skills }),
+			...(full_name && { full_name }),
+		};
+		const updatedProfile = await userModel.updateProfile(userId, updateData);
+		// console.log("Updated sini:", updatedProfile);
+		return res.status(200).json({
+			success: true,
+			message: "Profile updated successfully",
+			data: {
+				id: Number(updatedProfile.id),
+				username: updatedProfile.username,
+				email: updatedProfile.email,
+				full_name: updatedProfile.full_name,
+				work_history: updatedProfile.work_history,
+				skills: updatedProfile.skills,
+				updated_at: updatedProfile.updated_at,
+			},
+		});
 	} catch (error) {
-	  throw new Error(`Failed to update profile: ${error.message}`);
+		console.error("Profile update error:", error);
+		return res.status(500).json({
+			success: false,
+			error: "Failed to update profile",
+		});
 	}
-  }
+};
 
 export async function getUsers(req, res) {
 	try {

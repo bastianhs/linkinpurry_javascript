@@ -1,181 +1,282 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-
-const styles = {
-    page: {
-        padding: "20px",
-        fontFamily: "Arial, sans-serif",
-        backgroundColor: "#f3f2ef",
-        minHeight: "100vh",
-    },
-    header: {
-        textAlign: "center",
-        marginBottom: "20px",
-        color: "#0073b1",
-    },
-    inputContainer: {
-        display: "flex",
-        justifyContent: "center",
-        marginBottom: "20px",
-    },
-    input: {
-        padding: "10px",
-        width: "60%",
-        maxWidth: "400px",
-        border: "1px solid #ccc",
-        borderRadius: "4px",
-        marginRight: "10px",
-    },
-    button: {
-        background: "#0073b1",
-        color: "#fff",
-        border: "none",
-        padding: "10px 20px",
-        borderRadius: "4px",
-        cursor: "pointer",
-    },
-    buttonHover: {
-        background: "#0056b3",
-    },
-    list: {
-        display: "flex",
-        flexWrap: "wrap",
-        justifyContent: "center",
-    },
-    card: {
-        background: "#fff",
-        border: "1px solid #ddd",
-        borderRadius: "4px",
-        padding: "20px",
-        margin: "10px",
-        textAlign: "center",
-        width: "250px",
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-        transition: "transform 0.2s",
-    },
-    cardHover: {
-        transform: "scale(1.05)",
-    },
-    imgContainer: {
-        display: "flex",
-        justifyContent: "center",
-        marginBottom: "10px",
-    },
-    img: {
-        borderRadius: "50%",
-        width: "100px",
-        height: "100px",
-        objectFit: "cover",
-    },
-    name: {
-        fontSize: "1.2em",
-        marginBottom: "10px",
-        color: "#0073b1",
-    },
-    error: {
-        color: "red",
-        textAlign: "center",
-        marginTop: "20px",
-    },
-};
+import { Search, UserPlus, MailPlus, X } from "lucide-react";
+import api from "../../api";
+import Snackbar from "../../Components/Snackbar";
+import { UserIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const UsersPage = () => {
-    const [users, setUsers] = useState([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [authenticated, setAuthenticated] = useState(false);
-    const [error, setError] = useState(null);
+	const [users, setUsers] = useState([]);
+	const [searchTerm, setSearchTerm] = useState("");
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(null);
+	const [snackbarMessage, setSnackbarMessage] = useState("");
+	const [snackbarVisible, setSnackbarVisible] = useState(false);
+	const navigate = useNavigate();
 
-    const fetchUsers = async (search = "") => {
-        try {
-            const response = await axios.get("http://localhost:4001/api/users", {
-                params: { search }
-            });
-            if (response.status === 200) {
-                setUsers(response.data.data);
-                setError(null);
-            } else {
-                setUsers([]);
-                setError("Failed to fetch users");
-            }
-        } catch (error) {
-            console.error("There was an error fetching the users!", error);
-            setUsers([]);
-            setError("There was an error fetching the users!");
-        }
-    };
+	const styles = {
+		container: {
+			maxWidth: "1128px",
+			margin: "0 auto",
+			padding: "24px 16px",
+			backgroundColor: "#f3f2ef",
+			minHeight: "calc(100vh - 52px)",
+		},
+		header: {
+			backgroundColor: "white",
+			borderRadius: "8px",
+			padding: "24px",
+			marginBottom: "24px",
+			boxShadow: "0 0 0 1px rgba(0,0,0,0.08)",
+		},
+		title: {
+			fontSize: "20px",
+			fontWeight: "600",
+			color: "rgba(0,0,0,0.9)",
+			marginBottom: "16px",
+		},
+		searchBar: {
+			position: "relative",
+			marginBottom: "16px",
+		},
+		searchIcon: {
+			position: "absolute",
+			left: "12px",
+			top: "50%",
+			transform: "translateY(-50%)",
+			color: "rgba(0,0,0,0.6)",
+		},
+		searchInput: {
+			width: "100%",
+			padding: "12px 12px 12px 40px",
+			border: "1px solid rgba(0,0,0,0.3)",
+			borderRadius: "4px",
+			fontSize: "14px",
+			"&:focus": {
+				outline: "none",
+				borderColor: "#0a66c2",
+			},
+		},
+		grid: {
+			display: "grid",
+			gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+			gap: "20px",
+			"@media (max-width: 640px)": {
+				gridTemplateColumns: "1fr",
+			},
+		},
+		card: {
+			backgroundColor: "white",
+			borderRadius: "8px",
+			padding: "24px",
+			boxShadow: "0 0 0 1px rgba(0,0,0,0.08)",
+			transition: "box-shadow 0.3s",
+			"&:hover": {
+				boxShadow: "0 0 0 1px rgba(0,0,0,0.15)",
+			},
+		},
+		profileSection: {
+			textAlign: "center",
+			marginBottom: "16px",
+		},
+		avatarContainer: {
+			width: "104px",
+			height: "104px",
+			margin: "0 auto 12px",
+			position: "relative",
+		},
+		avatar: {
+			width: "100%",
+			height: "100%",
+			borderRadius: "50%",
+			objectFit: "cover",
+			border: "2px solid #fff",
+			boxShadow: "0 0 0 1px rgba(0,0,0,0.08)",
+		},
+		name: {
+			fontSize: "16px",
+			fontWeight: "600",
+			color: "rgba(0,0,0,0.9)",
+			marginBottom: "4px",
+			"&:hover": {
+				color: "#0a66c2",
+				textDecoration: "underline",
+				cursor: "pointer",
+			},
+		},
+		username: {
+			fontSize: "14px",
+			color: "rgba(0,0,0,0.6)",
+			marginBottom: "8px",
+		},
+		location: {
+			fontSize: "14px",
+			color: "rgba(0,0,0,0.6)",
+			marginBottom: "16px",
+		},
+		actions: {
+			display: "flex",
+			gap: "8px",
+			flexDirection: "column",
+		},
+		button: {
+			padding: "6px 16px",
+			borderRadius: "16px",
+			fontSize: "14px",
+			fontWeight: "600",
+			cursor: "pointer",
+			display: "flex",
+			alignItems: "center",
+			justifyContent: "center",
+			gap: "8px",
+			transition: "all 0.2s",
+		},
+		primaryButton: {
+			backgroundColor: "#0a66c2",
+			color: "white",
+			border: "none",
+			"&:hover": {
+				backgroundColor: "#004182",
+			},
+		},
+		secondaryButton: {
+			backgroundColor: "white",
+			color: "rgba(0,0,0,0.6)",
+			border: "1px solid rgba(0,0,0,0.6)",
+			"&:hover": {
+				border: "2px solid rgba(0,0,0,0.6)",
+				backgroundColor: "rgba(0,0,0,0.08)",
+			},
+		},
+		emptyState: {
+			textAlign: "center",
+			padding: "40px 20px",
+			backgroundColor: "white",
+			borderRadius: "8px",
+			boxShadow: "0 0 0 1px rgba(0,0,0,0.08)",
+		},
+		emptyIcon: {
+			marginBottom: "16px",
+			color: "rgba(0,0,0,0.6)",
+		},
+		emptyText: {
+			fontSize: "16px",
+			color: "rgba(0,0,0,0.6)",
+		},
+	};
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
+	const fetchUsers = async (search = "") => {
+		setLoading(true);
+		try {
+			const response = await api.get("/users", { params: { search } });
+			setUsers(response.data.data);
+			setError(null);
+		} catch (err) {
+			setUsers([]);
+			// setError("Failed to fetch users");
+		} finally {
+			setLoading(false);
+		}
+	};
 
-    useEffect(() => {
-        console.log("Users state:", users);
-    }, [users]);
+	useEffect(() => {
+		fetchUsers();
+	}, []);
 
-    const handleSearch = (event) => {
-        setSearchTerm(event.target.value);
-    };
+	const handleSearch = (event) => {
+		setSearchTerm(event.target.value);
+		if (event.target.value === "") {
+			fetchUsers();
+		}
+	};
 
-    const handleSearchClick = () => {
-        fetchUsers(searchTerm);
-    };
+	const handleSearchSubmit = (event) => {
+		event.preventDefault();
+		fetchUsers(searchTerm);
+	};
 
-    const handleSendRequest = (userId) => {
-        console.log(`Send connection request to user ${userId}`);
-    };
+	const handleConnect = async (userId) => {
+		try {
+			await api.post("/connection-requests", { toId: userId });
+			setSnackbarMessage({
+				text: "Connection request sent successfully",
+				type: "success",
+			});
+			setSnackbarVisible(true);
+		} catch (err) {
+			setSnackbarMessage({
+				text: "Failed to send connection request",
+				type: "error",
+			});
+			setSnackbarVisible(true);
+		}
+	};
 
-    return (
-        <div style={styles.page}>
-        <h1 style={styles.header}>User List</h1>
-        <div style={styles.inputContainer}>
-            <input
-                type="text"
-                placeholder="Search user..."
-                value={searchTerm}
-                onChange={handleSearch}
-                style={styles.input}
-            />
-            <button
-                onClick={handleSearchClick}
-                style={styles.button}
-                onMouseOver={(e) => e.target.style.background = styles.buttonHover.background}
-                onMouseOut={(e) => e.target.style.background = styles.button.background}
-            >
-                Search
-            </button>
-        </div>
-            {error && <div style={styles.error}>{error}</div>}
-            <div style={styles.list}>
-                {Array.isArray(users) && users.length > 0 ? (
-                    users.map(user => (
-                        <div
-                            key={user.id}
-                            style={styles.card}
-                            onMouseOver={(e) => e.currentTarget.style.transform = styles.cardHover.transform}
-                            onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
-                        >
-                        <div style={styles.imgContainer}>
-                            <img src={user.profile_photo_path} alt={`${user.username}`} style={styles.img} />
-                        </div>
-                        <h2 style={styles.name}>{user.username}</h2>
-                        {authenticated && !user.connected && (
-                            <button
-                                onClick={() => handleSendRequest(user.id)}
-                                style={styles.button}
-                                onMouseOver={(e) => e.target.style.background = styles.buttonHover.background}
-                                onMouseOut={(e) => e.target.style.background = styles.button.background}
-                            >
-                                Connect
-                            </button>
-                        )}
-                        </div>
-                    ))
-                ) : (
-                    <div style={styles.error}>No users found</div>
-                )}
-            </div>
-        </div>
-    );
+	if (loading) return <div style={styles.container}>Loading...</div>;
+	if (error) return <div style={styles.container}>Error: {error}</div>;
+
+	return (
+		<div style={styles.container}>
+			<div style={styles.header}>
+				<h1 style={styles.title}>People you may know</h1>
+				<form onSubmit={handleSearchSubmit}>
+					<div style={styles.searchBar}>
+						<Search style={styles.searchIcon} size={20} />
+						<input
+							type="text"
+							placeholder="Search by name..."
+							value={searchTerm}
+							onChange={handleSearch}
+							style={styles.searchInput}
+						/>
+					</div>
+				</form>
+			</div>
+
+			{users.length === 0 ? (
+				<div style={styles.emptyState}>
+					<Search size={48} style={styles.emptyIcon} />
+					<p style={styles.emptyText}>No users found</p>
+				</div>
+			) : (
+				<div style={styles.grid}>
+					{users.map((user) => (
+						<div key={user.id} style={styles.card}>
+							<div style={styles.profileSection}>
+								<div style={styles.avatarContainer}>
+									<img
+										src={user.profile_photo_path}
+										alt={user.username}
+										style={styles.avatar}
+									/>
+								</div>
+								<h2 style={styles.name}>{user.username}</h2>
+								<p style={styles.username}>@{user.username}</p>
+							</div>
+
+							<div style={styles.actions}>
+								<button
+									onClick={() => navigate(`/profile/${user.username}`)}
+									style={{ ...styles.button, ...styles.primaryButton }}
+								>
+									<UserIcon size={16} />
+									View Profile
+								</button>
+							</div>
+						</div>
+					))}
+				</div>
+			)}
+
+			{snackbarVisible && (
+				<Snackbar
+					message={snackbarMessage.text}
+					type={snackbarMessage.type}
+					onClose={() => setSnackbarVisible(false)}
+				/>
+			)}
+		</div>
+	);
 };
 
 export default UsersPage;

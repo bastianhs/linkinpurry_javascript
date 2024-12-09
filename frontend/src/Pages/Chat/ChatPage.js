@@ -4,6 +4,7 @@ import ChatList from "../../Components/Chat/ChatList";
 import ChatWindow from "../../Components/Chat/ChatWindow";
 import NewChat from "../../Components/Chat/NewChat";
 // import { useAuth } from "../../Context/authContext";
+import { useParams } from "react-router-dom";
 
 const ChatPage = () => {
 	const styles = {
@@ -80,7 +81,14 @@ const ChatPage = () => {
 	const [isTyping, setIsTyping] = useState(false);
 	const [typingUsers, setTypingUsers] = useState(new Set());
 	const typingTimeoutRef = useRef(null);
-
+	const { id } = useParams();
+	useEffect(() => {
+		if (id) {
+			// console.log("ID: ", id);
+            setToUser({ id: parseInt(id) });
+			fetchMessages(parseInt(id));
+        }
+    }, [id]);
 	useEffect(() => {
 		const newSocket = io("http://localhost:4001", {
 			transports: ["websocket"],
@@ -178,7 +186,7 @@ const ChatPage = () => {
 			}));
 
 			setMessages(formattedMessages);
-			// console.log("MESSAGES: ", messages);
+			console.log("MESSAGES: ", messages);
 		} catch (error) {
 			console.error("Error fetching messages:", error);
 		}

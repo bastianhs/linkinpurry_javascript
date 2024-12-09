@@ -1,7 +1,7 @@
 import RegisterPage from "./Pages/Register/RegisterPage";
 import LoginPage from "./Pages/Login/LoginPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import MyProfile from "./Pages/ProfilePage/profilePage";
+import MyProfile from "./Pages/ProfilePage/ProfilePage";
 import UsersPage from "./Pages/Connection/UsersPage";
 import ConnectionRequestsPage from "./Pages/Connection/ConnectionRequestsPage";
 import ConnectionsPage from "./Pages/Connection/ConnectionsPage";
@@ -17,6 +17,7 @@ import ContactPage from "./Pages/Contact/ContactPage";
 import SupportPage from "./Pages/SupportPage/SupportPage";
 import { useEffect, useState } from "react";
 import AboutPage from "./Components/About/AboutPage";
+import OtherUserProfile from "./Pages/ProfilePage/OtherUserProfilePage";
 
 function App() {
 	const [isScrolled, setIsScrolled] = useState(false);
@@ -106,7 +107,9 @@ function App() {
 										/>
 										<main className="main-content">
 											<Routes>
-												<Route path="/profile/:id" element={<MyProfile />} />
+												<Route path="/profile" element={<MyProfile />} />
+												<Route path="/profile/:username" element={<OtherUserProfile />} />
+
 												<Route path="/users" element={<UsersPage />} />
 												<Route
 													path="/connection-requests"
@@ -117,6 +120,7 @@ function App() {
 													element={<ConnectionsPage />}
 												/>
 												<Route path="/chat" element={<ChatPage />} />
+												<Route path="/chat/:id" element={<ChatPage />} />
 												<Route path="/" element={<FeedPage />} />
 												<Route path="/home" element={<FeedPage />} />
 												<Route path="/contact" element={<ContactPage />} />

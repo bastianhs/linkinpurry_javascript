@@ -131,7 +131,7 @@ const Header = () => {
 			</div>
 
 			<nav style={styles.nav}>
-				<Link to="/users" style={styles.navItem}>
+				<Link to="/home" style={styles.navItem}>
 					<Home style={styles.navIcon} size={24} />
 					<span>Home</span>
 				</Link>

@@ -105,10 +105,38 @@ const deleteFeed = async(req, res) => {
     }
 }
 
+const getFeedByUserID = async (req, res) => {
+    try {
+        const userId = parseInt(req.params);
+        if (!userId) {
+            throw new Error("Invalid userId");
+        }
+        const { cursor, limit = 10 } = req.query;
+
+        const { feeds, nextCursor } = await feedModel.getFeed(userId, cursor ? parseInt(cursor) : null, parseInt(limit));
+
+        res.status(200).json({
+            success: true,
+            message: "Get feed success",
+            body: { currentUserId: userId, feeds, cursor: nextCursor },
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Get feed failed",
+            error: error.message || null,
+        });
+    }
+};
+
 const feedController = {
     getFeed,
     createFeed,
     updateFeed,
-    deleteFeed
+    deleteFeed,
+    getFeedByUserID,
 };
+
+
 export default feedController;
