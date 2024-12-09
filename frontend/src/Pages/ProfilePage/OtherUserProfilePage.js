@@ -162,6 +162,7 @@ const OtherUserProfile = () => {
 			color: "rgba(0,0,0,0.6)",
 		},
 	};
+
 	useEffect(() => {
 		const fetchUserProfile = async () => {
 			setLoading(true);
@@ -190,14 +191,133 @@ const OtherUserProfile = () => {
 			fetchUserProfile();
 		}
 	}, [username]);
+	useEffect(() => {
+		const fetchConnections = async () => {
+			setLoading(true);
+			try {
+				const response = await api.get(`/connections/status/${userData.id}`);
+				if (response.isPending) {
+					setConnectionStatus("pending");
+				} else if (response.isConnected) {
+					setConnectionStatus("connected");
+				} else {
+					setConnectionStatus("not connected");
+					// setError(response.data.message);
+				}
+			} catch (err) {
+				setError(err.response?.data?.message || "Failed to fetch profile");
+			} finally {
+				setLoading(false);
+			}
+		};
+		if (userData) {
+			fetchConnections();
+		}
+	}, [userData]);
 
 	const handleMessage = () => {
 		navigate(`/chat/${userData.id}`);
 	};
 
+	const handleConnect = async () => {
+		try {
+			await api.post("/connection-requests", { toId: userData.id });
+			setConnectionStatus("pending");
+			setSnackbarMessage({
+				text: "Connection request sent successfully",
+				type: "success",
+			});
+			setSnackbarVisible(true);
+		} catch (err) {
+			setError(
+				err.response?.data?.message || "Failed to send connection request"
+			);
+			setSnackbarVisible(true);
+		}
+	};
+	const handleDisconnect = async () => {
+		const confirmed = window.confirm(
+			"Are you sure you want to remove this connection?"
+		);
+		if (!confirmed) return;
+
+		try {
+			await api.delete(`/connections/${userData.id}`);
+			setConnectionStatus("not connected");
+			setSnackbarMessage({
+				text: "Connection removed successfully",
+				type: "success",
+			});
+			setSnackbarVisible(true);
+		} catch (err) {
+			setError(err.response?.data?.message || "Failed to remove connection");
+			setSnackbarVisible(true);
+		}
+	};
+	const handleAccept = async () => {
+		try {
+			await api.put("/connection-requests", {
+				fromId: userData.id,
+				action: "accept",
+			});
+			setConnectionStatus("connected");
+			setSnackbarMessage({
+				text: "Connection request accepted",
+				type: "success",
+			});
+			setSnackbarVisible(true);
+		} catch (err) {
+			setError(err.response?.data?.message || "Failed to accept request");
+			setSnackbarVisible(true);
+		}
+	};
+	const handleReject = async () => {
+		try {
+			await api.put("/connection-requests", {
+				fromId: userData.id,
+				action: "decline",
+			});
+			setConnectionStatus("not connected");
+			setSnackbarMessage({
+				text: "Connection request declined",
+				type: "success",
+			});
+			setSnackbarVisible(true);
+		} catch (err) {
+			setError(err.response?.data?.message || "Failed to decline request");
+			setSnackbarVisible(true);
+		}
+	};
+
 	if (loading) return <div style={styles.container}>Loading...</div>;
 	if (error) return <div style={styles.container}>Error: {error}</div>;
 
+	const renderConnectionActions = () => {
+		switch (connectionStatus) {
+			case "connected":
+				return (
+					<div>
+						<button onClick={handleMessage}>Message</button>
+						<button onClick={handleDisconnect}>Remove Connection</button>
+					</div>
+				);
+			case "pending":
+				return (
+					<div>
+						<button onClick={handleAccept}>Accept</button>
+						<button onClick={handleReject}>Reject</button>
+					</div>
+				);
+			case "not connected":
+				return (
+					<div>
+						<button onClick={handleConnect}>Connect</button>
+					</div>
+				);
+			default:
+				return null;
+		}
+	};
 	return (
 		<div style={styles.container}>
 			<div style={styles.header}>
@@ -208,6 +328,41 @@ const OtherUserProfile = () => {
 							alt={userData.username}
 							style={styles.avatar}
 						/>
+						<div style={styles.actionButtons}>
+							{connectionStatus === "connected" && (
+								<>
+									<button style={styles.primaryButton} onClick={handleMessage}>
+										<MessageSquare size={16} />
+										Message
+									</button>
+									<button
+										style={styles.dangerButton}
+										onClick={handleDisconnect}
+									>
+										<UserMinus size={16} />
+										Remove Connection
+									</button>
+								</>
+							)}
+							{connectionStatus === "pending" && (
+								<>
+									<button style={styles.primaryButton} onClick={handleAccept}>
+										<Check size={16} />
+										Accept
+									</button>
+									<button style={styles.secondaryButton} onClick={handleReject}>
+										<X size={16} />
+										Reject
+									</button>
+								</>
+							)}
+							{connectionStatus === "not connected" && (
+								<button style={styles.primaryButton} onClick={handleConnect}>
+									<UserPlus size={16} />
+									Connect
+								</button>
+							)}
+						</div>
 					</div>
 					<div style={styles.info}>
 						<h1 style={styles.name}>{userData.name}</h1>
@@ -219,7 +374,7 @@ const OtherUserProfile = () => {
 					</div>
 				</div>
 			</div>
-
+			<renderConnectionActions />
 			<div style={styles.section}>
 				<h2 style={styles.sectionTitle}>About</h2>
 				<div style={styles.detail}>

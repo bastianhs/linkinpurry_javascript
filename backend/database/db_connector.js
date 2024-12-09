@@ -3,11 +3,11 @@ import pkg from 'pg';
 const { Client } = pkg;
 
 const client = new Client({
-  user: 'farid',
-  host: 'localhost',
-  database: 'wbd',
-  password: 'fjfj',
-  port: 5433,
+  user: process.env.POSTGRES_USER || 'farid',
+  host: process.env.POSTGRES_HOST  || 'db',
+  database: process.env.POSTGRES_DB  || 'wbd',
+  password: process.env.POSTGRES_PASSWORD || 'fjfj',
+  port:process.env.PORT  || 5432,
 });
 
 

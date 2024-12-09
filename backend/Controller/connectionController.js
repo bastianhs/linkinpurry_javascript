@@ -223,10 +223,8 @@ const getUserConnection = async (req, res) => {
 }
 const isConnected = async (req, res) => {
     try {
-        const currentUserId = req.user?.userId; // Assuming you have authentication middleware
+        const currentUserId = req.user?.userId; 
         const { id } = req.params;
-    
-        // Check if connection exists
         console.log(currentUserId, id);
         const existingConnection = await connectionModel.getConnectionByFromIdToId(currentUserId, id);
         console.log("1.2")
@@ -235,7 +233,7 @@ const isConnected = async (req, res) => {
         const pendingRequest = await connectionRequestModel.getConnectionRequestsByFromIdToId(currentUserId, id);
         console.log(pendingRequest)
     
-        res.json({
+        res.status(200).json({
           isConnected: !!existingConnection,
           isPending: !!pendingRequest
         });

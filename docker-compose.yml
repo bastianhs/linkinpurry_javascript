@@ -2,7 +2,7 @@ services:
   backend:
     build: ./backend
     ports:
-      - "127.0.0.1:4001:4001"  # Map backend port to host
+      - "127.0.0.1:3000:3000"  # Map backend port to host
     networks:
       - my-network
     volumes: 
@@ -10,7 +10,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "127.0.0.1:3000:3000"  # Map frontend port to host
+      - "127.0.0.1:3001:3001"  # Map frontend port to host
     depends_on:
       - backend  # Ensure backend starts before frontend
     networks:
