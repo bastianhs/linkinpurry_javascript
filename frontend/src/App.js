@@ -10,70 +10,68 @@ import { AuthProvider } from "./Context/authContext";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import ChatPage from "./Pages/Chat/ChatPage";
 import NotFoundPage from "./Pages/NotFound/NotFoundPage";
+import Header from "./Components/Layout/Header";
+import Footer from "./Components/Layout/Footer"
+import ContactPage from "./Pages/Contact/ContactPage";
+import SupportPage from "./Pages/SupportPage/SupportPage";
+import { useEffect, useState } from "react";
 
 function App() {
+	const [isScrolled, setIsScrolled] = useState(false);
+
+	useEffect(() => {
+		const handleScroll = () => {
+			setIsScrolled(window.scrollY > 0);
+		};
+
+		window.addEventListener("scroll", handleScroll);
+		return () => window.removeEventListener("scroll", handleScroll);
+	}, []);
+
 	return (
 		<AuthProvider>
 			<Router>
-				<Routes>
-					{/* Public Routes */}
-					<Route path="/register" element={<RegisterPage />} />
-					<Route path="/login" element={<LoginPage />} />
+				<div className="app-container">
+					<Routes>
+						{/* Public Routes - No Header/Footer */}
+						<Route path="/register" element={<RegisterPage />} />
+						<Route path="/login" element={<LoginPage />} />
 
-					{/* Protected Routes */}
-					<Route
-						path="/profile"
-						element={
-							<ProtectedRoute>
-								<MyProfile />
-							</ProtectedRoute>
-						}
-					/>
-
-					<Route
-						path="/users"
-						element={
-							<ProtectedRoute>
-								<UsersPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="/connection-requests"
-						element={
-							<ProtectedRoute>
-								<ConnectionRequestsPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="/connections/:userId"
-						element={
-							<ProtectedRoute>
-								<ConnectionsPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="/connections/:userId"
-						element={
-							<ProtectedRoute>
-								<ConnectionsPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="/chat"
-						element={
-							<ProtectedRoute>
-								<ChatPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route path="/" element={<LoginPage />} />
-					{/* 404 Route */}
-					<Route path="*" element={<NotFoundPage />} />
-				</Routes>
+						{/* Protected Routes */}
+						<Route
+							path="/*"
+							element={
+								<ProtectedRoute>
+									<>
+										<Header
+											className={`header ${isScrolled ? "scrolled" : ""}`}
+										/>
+										<main className="main-content">
+											<Routes>
+												<Route path="/profile" element={<MyProfile />} />
+												<Route path="/users" element={<UsersPage />} />
+												<Route
+													path="/connection-requests"
+													element={<ConnectionRequestsPage />}
+												/>
+												<Route
+													path="/connections/:userId"
+													element={<ConnectionsPage />}
+												/>
+												<Route path="/chat" element={<ChatPage />} />
+												<Route path="/" element={<UsersPage />} />  {/* this should be feeds route */}	
+												<Route path="/contact" element={<ContactPage />} />
+												<Route path="/support" element={<SupportPage />} />
+												<Route path="*" element={<NotFoundPage />} />
+											</Routes>
+										</main>
+										<Footer className="footer" />
+									</>
+								</ProtectedRoute>
+							}
+						/>
+					</Routes>
+				</div>
 			</Router>
 		</AuthProvider>
 	);

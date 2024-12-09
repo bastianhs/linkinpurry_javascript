@@ -1,6 +1,12 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import userModel from "../Model/userModel.js";
+import { BaseResponseDTO } from "../Dto/baseDto.js";
+import {
+	LoginRequestDTO,
+	RegisterRequestDTO,
+	UserResponseDTO,
+} from "../Dto/authDto.js";
 
 const login = async (req, res) => {
 	const { email, password } = req.body;
@@ -14,23 +20,16 @@ const login = async (req, res) => {
 	}
 
 	try {
-		const user = await userModel.getUserByEmailOrUsername(email, email);
+		const loginDto = new LoginRequestDTO(req.body);
+		const user = await userModel.getUserByEmailOrUsername(loginDto.email,loginDto.email);
 
 		if (!user) {
-			return res.status(401).json({
-				success: false,
-				message: "Invalid credentials.",
-				error: "User not found or invalid email.",
-			});
+			return res.status(401).json(BaseResponseDTO.error("Email not found"));
 		}
 
 		const isPasswordValid = await bcrypt.compare(password, user.password_hash);
 		if (!isPasswordValid) {
-			return res.status(401).json({
-				success: false,
-				message: "Invalid credentials.",
-				error: "Incorrect password.",
-			});
+			return res.status(401).json(BaseResponseDTO.error("Invalid credentials", "Incorrect password"));
 		}
 
 		const payload = {
@@ -50,24 +49,16 @@ const login = async (req, res) => {
 			domain: "localhost",
 		});
 
-		res.json({
-			success: true,
-			message: "Login successful",
-			body: {
-				token,
-			},
-		});
+		return res.json(BaseResponseDTO.success({ token }));
 	} catch (err) {
-		console.error(err);
-		res.status(500).json({
-			success: false,
-			message: "Server error during login.",
-			error: err.message,
-		});
+		return res
+			.status(500)
+			.json(BaseResponseDTO.error("Server error during login"));
 	}
 };
 
 const register = async (req, res) => {
+	const registerDto = new RegisterRequestDTO(req.body);
 	const { username, email, name, password } = req.body;
 
 	if (!username || !email || !name || !password) {

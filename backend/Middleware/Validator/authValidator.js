@@ -1,6 +1,6 @@
 import { validateEmail, validatePassword, sanitizeString } from "./utils.js";
 
-export const loginValidator = (req, res, next) => {
+export const loginValidator = async (req, res, next) => {
 	const { email, password } = req.body;
 	const errors = [];
 
@@ -15,10 +15,10 @@ export const loginValidator = (req, res, next) => {
 	}
 
 	if (errors.length) {
-		return res.status(400).json({ success: false, errors });
+		return res
+			.status(400)
+			.json({ success: false, message: "Validation failed", errors });
 	}
-
-	req.body.email = sanitizeString(email);
 	next();
 };
 

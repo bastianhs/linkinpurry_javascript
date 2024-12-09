@@ -79,10 +79,10 @@ const router = express.Router();
  *         description: Logout successful
  */
 
-const authLimiter = createRateLimiter(15 * 60 * 1000, 5); // 5 requests per 15 minutes
+// const authLimiter = createRateLimiter(15 * 60 * 1000, 5); // 5 requests per 15 minutes
 
-router.post("/login", authLimiter,loginValidator,authentication.login);
-router.post("/register", authLimiter, registerValidator,authentication.register);
+router.post("/login",loginValidator,authentication.login);
+router.post("/register", registerValidator,authentication.register);
 router.post("/logout", authenticate, authentication.logout);
 router.get("/protected", authenticate, (req, res) => {
 	res.json({ message: "Welcome to the protected route!", user: req.user });
