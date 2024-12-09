@@ -80,6 +80,7 @@ const ChatWindow = ({
 
 	useEffect(() => {
 		scrollToBottom();
+		console.log("iamdifajd")
 	}, [messages,isTyping]);
 
 	if (!activeChat) {

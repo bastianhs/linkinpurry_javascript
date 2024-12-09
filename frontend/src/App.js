@@ -1,7 +1,7 @@
 import RegisterPage from "./Pages/Register/RegisterPage";
 import LoginPage from "./Pages/Login/LoginPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import MyProfile from "./Pages/ProfilePage/profilePage";
+import MyProfile from "./Pages/ProfilePage/ProfilePage";
 import UsersPage from "./Pages/Connection/UsersPage";
 import ConnectionRequestsPage from "./Pages/Connection/ConnectionRequestsPage";
 import ConnectionsPage from "./Pages/Connection/ConnectionsPage";
@@ -43,7 +43,6 @@ function App() {
 	return (
 		<AuthProvider>
 			<Router>
-				
 				<div className="app-container">
 					<Routes>
 						{/* Public Routes - No Header/Footer */}
@@ -60,8 +59,13 @@ function App() {
 										/>
 										<main className="main-content">
 											<Routes>
-												<Route path="/profile/:id" element={<MyProfile />} />
+			
+												<Route
+													path="/profile/:username"
+													element={<OtherUserProfile />}
+												/>
 												<Route path="/profile" element={<MyProfile />} />
+
 												<Route path="/users" element={<UsersPage />} />
 												<Route
 													path="/connection-requests"

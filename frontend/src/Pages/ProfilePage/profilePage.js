@@ -158,7 +158,7 @@ const UserProfile = () => {
 				const response = await api.get("/profile/me", {
 					credentials: "include",
 				});
-
+        // console.log(data)
 				const data = response.data.body;
 				setUserData(data);
 			} catch (error) {
@@ -286,7 +286,7 @@ const UserProfile = () => {
 
 				setTimeout(() => {
 					onCancel();
-				}, 2000);
+				}, 5000);
 			} catch (error) {
 				setSnackbarMessage({
 					text: error.response?.data?.error || "Error updating profile",
