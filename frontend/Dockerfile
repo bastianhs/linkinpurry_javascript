@@ -7,6 +7,11 @@ COPY package.json package-lock.json ./
 # Install frontend dependencies
 RUN npm install
 
+COPY . .
+
+RUN chown -R node:node /app
+USER node
+
 # Expose the port that the frontend will run on (e.g., 3001)
 EXPOSE 3001
 
