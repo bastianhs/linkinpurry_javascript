@@ -147,19 +147,19 @@ const createChat = async (req, res) => {
 			},
 		};
 
+		// const subscriptions = await getUserSubscription(to_id);
+		// const payload = {
+		// 	title: 'New Message',
+		// 	body: `${newChat.users_chat_from_idTousers.username}: ${newChat.message}`,
+		// 	url: `/chat/${newChat.id}`
+		// };
+		
+		// subscriptions.forEach(subscription => {
+		// 	sendNotification(subscription, payload);
+		// });
+		
 		res.status(201).json(formattedNewChat);
-		const subscriptions = await getUserSubscription(to_id);
-		const payload = {
-		  title: 'New Message',
-		  body: `${newChat.users_chat_from_idTousers.username}: ${newChat.message}`,
-		  url: `/chat/${newChat.id}`
-		};
-	
-		subscriptions.forEach(subscription => {
-		  sendNotification(subscription, payload);
-		});
-	
-		res.status(201).json(formattedNewChat);
+		// res.status(201).json(formattedNewChat);
 	} catch (error) {
 		console.error("Create chat error:", error);
 		res.status(500).json({ error: "Failed to create chat" });
