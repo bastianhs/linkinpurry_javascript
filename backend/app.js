@@ -13,13 +13,16 @@ import dotenv from "dotenv";
 import cors from "cors";
 import http from 'http';
 import setupWebSocket from './Config/websocket.js';
-
+import notificationRouter from './Router/notificationRouter.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app); 
 const io = setupWebSocket(server);
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 app.use(cors({
   origin: 'http://localhost:3000',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -42,7 +45,8 @@ app.use("/api/users", userRouter);
 app.use("/api/connection-requests", connectionRequestRouter);
 app.use("/api/connections", connectionRouter);
 app.use("/api/chats", chatRouter);
-
+app.use("/api/notifications", notificationRouter);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Error handler
 app.use(errorHandler);
 

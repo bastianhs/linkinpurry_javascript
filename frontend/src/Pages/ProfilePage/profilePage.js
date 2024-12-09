@@ -13,34 +13,87 @@ import {
   faTools,
   faCamera,
   faTrash,
+  faUserPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import api from "../../Utils/api";
+import { useParams } from "react-router-dom";
 
 const UserProfile = () => {
   const [userData, setUserData] = useState(null);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState({
+    isConnected: false,
+    isPending: false
+  });
+  const { id } = useParams(); 
+
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const userid = await api.get('http://localhost:4001/api/profile/me');
-        const id = userid.data.body.userId;
-        const response = await api.get('http://localhost:4001/api/profile/'+id);
+        const meResponse = await api.get('http://localhost:4001/api/profile/me');
+        const currentUserId = meResponse.data.body.userId;
+
+        setIsOwnProfile(currentUserId === id);
+
+        const response = await api.get(`http://localhost:4001/api/profile/${id}`);
         const data = response.data.body; 
         console.log(data);
         setUserData({
+          userId: id,
           username: data.username,
           email: data.email,
           created_at: data.created_at,
           updated_at: data.updated_at,
+          name: data.name,
+          profile_photo: data.profile_photo,
+          work_history: data.work_history,
+          skills: data.skills,
+          connection_count: data.connection_count
         }); 
+
+        if (!isOwnProfile) {
+          try {
+            const connectionResponse = await api.get(`http://localhost:4001/api/connections/status/${id}`);
+            setConnectionStatus({
+              isConnected: connectionResponse.data.isConnected,
+              isPending: connectionResponse.data.isPending
+            });
+            console.log(connectionResponse.data);
+          } catch (connectionError) {
+            console.error('Error checking connection status:', connectionError);
+          }
+        }
+        
       } catch (error) {
         console.error('Error fetching user data:', error);
+      } finally {
+        setLoading(false);
       }
     };
   
     fetchUserData();
-  }, []);
+    // console.log(userData.profile_photo);
+  }, [id, isOwnProfile]);
+  const handleConnectionRequest = async () => {
+    try {
+      await api.post('http://localhost:4001/api/connection-requests', {
+        toId: id
+      });
+      
+      setConnectionStatus(prev => ({
+        ...prev,
+        isPending: true
+      }));
+      alert('Connection request sent!');
+    } catch (error) {
+      console.error('Error sending connection request:', error);
+      alert('Failed to send connection request. Please try again.');
+    }
+  };
+  // console.log(userData.profile_photo);
   const EditProfileForm = ({ onCancel }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [profilePhoto, setProfilePhoto] = useState(userData.profile_photo || null);
@@ -93,23 +146,21 @@ const UserProfile = () => {
     const handleSubmit = async (e) => {
       e.preventDefault();
       
-      // Create FormData for file upload
       const submitData = new FormData();
       
-      // Append all text fields
       Object.keys(formData).forEach(key => {
         if (key !== 'profile_photo' && formData[key]) {
           submitData.append(key, formData[key]);
         }
       });
-
-      // Append profile photo if changed
+    
       if (formData.profile_photo) {
         submitData.append('profile_photo', formData.profile_photo);
       }
-
+      const meResponse = await api.get('http://localhost:4001/api/profile/me');
+      const currentUserId = meResponse.data.body.userId;
       try {
-        const response = await api.put('http://localhost:4001/api/profile/update', submitData, {
+        const response = await api.put(`http://localhost:4001/api/profile/${currentUserId}`, submitData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -121,6 +172,9 @@ const UserProfile = () => {
         console.error('Error updating profile:', error);
       }
     };
+    if (loading) {
+      return <LoadingSkeleton />;
+    }
 
     return (
       <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -130,14 +184,14 @@ const UserProfile = () => {
               <h1 className="text-2xl font-bold text-gray-900">Edit Profile</h1>
               <p className="mt-2 text-sm text-gray-600">Update your personal information</p>
             </div>
-
+  
             <div className="space-y-6">
               {/* Profile Photo Section */}
               <div className="flex flex-col items-center mb-6">
                 <div className="relative mb-4">
-                  {profilePhoto ? (
+                  {userData.profile_photo ? (
                     <img 
-                      src={profilePhoto} 
+                      src={userData.profile_photo} 
                       alt="Profile" 
                       className="w-32 h-32 rounded-full object-cover shadow-md"
                     />
@@ -180,8 +234,7 @@ const UserProfile = () => {
                 />
                 <p className="text-sm text-gray-600">Click camera icon to upload new photo</p>
               </div>
-
-              {/* Rest of the form remains the same as in the previous version */}
+  
               {/* Personal Information Section */}
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h2 className="text-lg font-semibold mb-4 border-b pb-2">Personal Details</h2>
@@ -220,7 +273,7 @@ const UserProfile = () => {
                   />
                 </div>
               </div>
-
+  
               {/* Professional Information Section */}
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h2 className="text-lg font-semibold mb-4 border-b pb-2">Professional Details</h2>
@@ -239,7 +292,7 @@ const UserProfile = () => {
                       onChange={handleInputChange}
                     />
                   </div>
-
+  
                   <div>
                     <label htmlFor="skills" className="block text-sm font-medium text-gray-700 mb-2">
                       Skills
@@ -256,7 +309,7 @@ const UserProfile = () => {
                   </div>
                 </div>
               </div>
-
+  
               {/* Action Buttons */}
               <div className="flex justify-end space-x-4 pt-4">
                 <button
@@ -354,16 +407,39 @@ const UserProfile = () => {
                     />
                   </div>
                 </div>
-
-                <div className="mt-8 flex justify-center">
-                  <button
-                    onClick={() => setShowEditForm(true)}
-                    className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-                  >
-                    <FontAwesomeIcon icon={faPen} className="h-5 w-5" />
-                    <span>Edit Profile</span>
-                  </button>
-                </div>
+                {isOwnProfile ? (
+                  <div className="mt-8 flex justify-center">
+                    <button
+                      onClick={() => setShowEditForm(true)}
+                      className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    >
+                      <FontAwesomeIcon icon={faPen} className="h-5 w-5" />
+                      <span>Edit Profile</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-8 flex justify-center space-x-4">
+                    {connectionStatus.isConnected ? (
+                      <div className="text-green-600 font-semibold flex items-center space-x-2">
+                        <FontAwesomeIcon icon={faUsers} className="h-5 w-5" />
+                        <span>Connected</span>
+                      </div>
+                    ) : connectionStatus.isPending ? (
+                      <div className="text-yellow-600 font-semibold flex items-center space-x-2">
+                        <FontAwesomeIcon icon={faUserPlus} className="h-5 w-5" />
+                        <span>Connection Pending</span>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleConnectionRequest}
+                        className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                      >
+                        <FontAwesomeIcon icon={faUserPlus} className="h-5 w-5" />
+                        <span>Connect</span>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
               <LoadingSkeleton />

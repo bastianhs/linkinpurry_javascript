@@ -165,5 +165,27 @@ const createChat = async (req, res) => {
 		res.status(500).json({ error: "Failed to create chat" });
 	}
 };
+import sendNotification from '../Util/pushNotification.js';
+
+const newMessageHandler = async (message) => {
+  const payload = {
+    title: 'New Message',
+    body: `${message.sender}: ${message.content}`,
+    url: `/chat/${message.chatId}`
+  };
+  await sendNotification(message.recipientId, payload);
+};
+
+const newPostHandler = async (post) => {
+  const payload = {
+    title: 'New Post',
+    body: `${post.author} has a new post`,
+    url: `/post/${post.id}`
+  };
+  const connections = await getUserConnections(post.authorId);
+  connections.forEach(async (connection) => {
+    await sendNotification(connection.id, payload);
+  });
+};
 
 export { getChatsByUser, getMessages, createChat };

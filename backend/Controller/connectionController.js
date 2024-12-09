@@ -221,6 +221,28 @@ const getUserConnection = async (req, res) => {
         });
     }
 }
+const isConnected = async (req, res) => {
+    try {
+        const currentUserId = req.user?.userId; // Assuming you have authentication middleware
+        const { id } = req.params;
+    
+        // Check if connection exists
+        console.log(currentUserId, id);
+        const existingConnection = await connectionModel.getConnectionByFromIdToId(currentUserId, id);
+        console.log("1.2")
+        console.log(existingConnection);
+        // Check for pending request
+        const pendingRequest = await connectionRequestModel.getConnectionRequestsByFromIdToId(currentUserId, id);
+        console.log(pendingRequest)
+    
+        res.json({
+          isConnected: !!existingConnection,
+          isPending: !!pendingRequest
+        });
+      } catch (error) {
+        res.status(500).json({ message: 'Error checking connection status' });
+      }
+};
 
 export {
     createConnectionRequest,
@@ -230,4 +252,5 @@ export {
     deleteConnection,
     getConnection,
     getUserConnection,
+    isConnected,
 };

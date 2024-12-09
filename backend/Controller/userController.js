@@ -1,31 +1,39 @@
 import bcrypt from "bcrypt";
 import database from "../database/db_connector.js";
 import userModel from "../Model/userModel.js";
+import path from "path";
 
 const { client } = database;
 
 export async function getProfile(id) {
 	try {
-		if (!id || isNaN(id)) {
-			throw new Error("Invalid user ID format");
-		}
-		const userId = BigInt(id);
-
-		const query = "SELECT * FROM users WHERE id = $1";
-		const values = [userId];
-		const result = await client.query(query, values);
-
-		if (result.rows.length === 0) {
-			throw new Error("User not found");
-		}
-		return result.rows;
+	  if (!id || isNaN(id)) {
+		throw new Error("Invalid user ID format");
+	  }
+	  const userId = BigInt(id);
+  
+	  const query = "SELECT * FROM users WHERE id = $1";
+	  const values = [userId];
+	  const result = await client.query(query, values);
+  
+	  if (result.rows.length === 0) {
+		throw new Error("User not found");
+	  }
+  
+	  const user = result.rows[0];
+	  // Add the base URL to the profile photo path
+	  if (user.profile_photo_path) {
+		user.profile_photo_url = `localhost:4001/uploads/${path.basename(user.profile_photo_path)}`;
+	  }
+  
+	  return user;
 	} catch (error) {
-		if (error.message.includes("invalid input syntax")) {
-			throw new Error("Invalid user ID format");
-		}
-		throw new Error(`Failed to fetch profile: ${error.message}`);
+	  if (error.message.includes("invalid input syntax")) {
+		throw new Error("Invalid user ID format");
+	  }
+	  throw new Error(`Failed to fetch profile: ${error.message}`);
 	}
-}
+  }
 
 export async function createProfile(name, email, password) {
 	try {
@@ -40,18 +48,28 @@ export async function createProfile(name, email, password) {
 	}
 }
 
-export async function updateProfile(id, username, email, password) {
+export async function updateProfile(id, username, email, password, work_history, skills, profile_photo) {
 	try {
-		const hashedPassword = await bcrypt.hash(password, 10);
-		const query =
-			"UPDATE users SET email = $1, password_hash = $2, updated_at = NOW(), username = $3 WHERE id = $4 RETURNING *";
-		const values = [email, hashedPassword, username, id];
-		const result = await client.query(query, values);
-		return result.rows;
+	  const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
+	  const query = `
+		UPDATE users
+		SET 
+		  username = COALESCE($1, username),
+		  email = COALESCE($2, email),
+		  password_hash = COALESCE($3, password_hash),
+		  work_history = COALESCE($4, work_history),
+		  skills = COALESCE($5, skills),
+		  profile_photo_path = COALESCE($6, profile_photo_path),
+		  updated_at = NOW()
+		WHERE id = $7
+		RETURNING *`;
+	  const values = [username, email, hashedPassword, work_history, skills, profile_photo, id];
+	  const result = await client.query(query, values);
+	  return result.rows[0];
 	} catch (error) {
-		throw new Error(`Failed to update profile: ${error.message}`);
+	  throw new Error(`Failed to update profile: ${error.message}`);
 	}
-}
+  }
 
 export async function getUsers(req, res) {
 	try {

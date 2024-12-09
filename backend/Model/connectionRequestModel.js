@@ -4,7 +4,9 @@ import prisma from "../database/prismaClient.js";
 const getConnectionRequests = async () => {
 	return await prisma.connection_request.findMany();
 };
-
+const getprisma = (query) => {
+    return prisma.connection_request.findFirst(query);
+};
 const getConnectionRequestsByFromIdToId = async (from_id, to_id) => {
 	return await prisma.connection_request.findUnique({
 		where: { from_id_to_id: { from_id, to_id } },
@@ -58,6 +60,7 @@ const connectionRequestModel = {
 	getConnectionRequestsByToId,
 	createConnectionRequest,
 	deleteConnectionRequest,
+    getprisma,
 };
 
 export default connectionRequestModel;

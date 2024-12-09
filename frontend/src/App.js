@@ -21,7 +21,7 @@ function App() {
 
 					{/* Protected Routes */}
 					<Route
-						path="/profile"
+						path="/profile/:id"
 						element={
 							<ProtectedRoute>
 								<MyProfile />

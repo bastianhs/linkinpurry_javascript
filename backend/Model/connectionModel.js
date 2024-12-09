@@ -5,6 +5,30 @@ const getConnections = async () => {
 	return await prisma.connection.findMany();
 };
 
+const getConnectionByFromIdToId = async (from_id, to_id) => {
+	return await prisma.connection.findFirst({
+		where: {
+			OR: [
+			  {
+				AND: [
+				  { from_id: BigInt(from_id) },
+				  { to_id: BigInt(to_id) },
+				]
+			  },
+			  {
+				AND: [
+				  { from_id: BigInt(to_id) },
+				  { to_id: BigInt(from_id) },
+				]
+			  }
+			]
+		  },
+		select: {
+			from_id: true,
+			to_id: true,
+		},
+	});
+}
 const getConnectionsByFromId = async (from_id) => {
 	const connections = await prisma.connection.findMany({
 		where: {
@@ -96,6 +120,7 @@ const connectionModel = {
 	createConnection,
 	deleteConnection,
 	getUserConnections,
+	getConnectionByFromIdToId,
 };
 
 export default connectionModel;
