@@ -167,10 +167,10 @@ const getConnection = async (req, res) => {
 const deleteConnection = async (req, res) => {
     const userId1 = Number(req.user.userId);
     const userId2 = Number(req.params.userId);
-
+    console.log(userId1, userId2);
     try {
         await connectionModel.deleteConnection(userId1, userId2);
-        await connectionModel.deleteConnection(userId2, userId1);
+        // await connectionModel.deleteConnection(userId2, userId1);
 
         res.status(200).json({
             messages: "Delete connection successful",

@@ -119,9 +119,24 @@ const createConnection = async (from_id, to_id) => {
 };
 
 const deleteConnection = async (from_id, to_id) => {
-	return await prisma.connection.delete({
-		where: { from_id_to_id: { from_id, to_id } },
-	});
+    return await prisma.connection.deleteMany({
+        where: {
+            OR: [
+                {
+                    AND: [
+                        { from_id: BigInt(from_id) },
+                        { to_id: BigInt(to_id) }
+                    ]
+                },
+                {
+                    AND: [
+                        { from_id: BigInt(to_id) },
+                        { to_id: BigInt(from_id) }
+                    ]
+                }
+            ]
+        }
+    });
 };
 
 const connectionModel = {

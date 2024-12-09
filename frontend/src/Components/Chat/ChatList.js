@@ -87,6 +87,7 @@ const ChatList = ({ chats, activeChat, onSelectChat, user }) => {
 			(a, b) =>
 				new Date(b.lastMessage.timestamp) - new Date(a.lastMessage.timestamp)
 		);
+		// console.log(uniqueChats);
 	return (
 		<div style={styles.chatList}>
 			{uniqueChats.map((chat) => (

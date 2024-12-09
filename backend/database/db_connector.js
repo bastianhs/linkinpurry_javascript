@@ -1,25 +1,29 @@
-import pkg from 'pg';
-
+import pkg from "pg";
 const { Client } = pkg;
 
 const client = new Client({
-  user: process.env.POSTGRES_USER || 'farid',
-  host: process.env.POSTGRES_HOST  || 'db',
-  database: process.env.POSTGRES_DB  || 'wbd',
-  password: process.env.POSTGRES_PASSWORD || 'fjfj',
-  port:process.env.PORT  || 5433,
+	user: process.env.POSTGRES_USER,
+	host: process.env.POSTGRES_HOST,
+	database: process.env.POSTGRES_DB,
+	password: process.env.POSTGRES_PASSWORD,
+	port: parseInt(process.env.POSTGRES_PORT),
 });
 
-
 async function connectDB() {
-  try {
-    await client.connect();
-    console.log('Connected to PostgreSQL via pg Client');
-  } catch (err) {
-    console.error('Connection error', err.stack);
-  }
+	let retries = 5;
+	while (retries) {
+		try {
+			await client.connect();
+			console.log("Connected to PostgreSQL via pg Client");
+			break;
+		} catch (err) {
+			console.log(`Failed to connect, retries left: ${retries}`);
+			retries -= 1;
+			// Wait 5 seconds
+			await new Promise((res) => setTimeout(res, 5000));
+		}
+	}
 }
-
 
 const database = { client, connectDB };
 export default database;

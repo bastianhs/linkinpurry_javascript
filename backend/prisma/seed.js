@@ -90,7 +90,7 @@ async function main() {
 				full_name: getRandomFullName(),
 				work_history: `Software Engineer at Company ${i}`,
 				skills: `JavaScript, Python, SQL, React ${i}`,
-				profile_photo_path: ``,
+				profile_photo_path: `uploads/default-avatar.png`,
 				updated_at: new Date(),
 			},
 		});

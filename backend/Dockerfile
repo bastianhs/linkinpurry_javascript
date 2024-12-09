@@ -1,17 +1,26 @@
-# Use the official Node.js image as the base image
 FROM node:21
 
-# Set the working directory inside the container
 WORKDIR /app
-COPY package.json package-lock.json ./
+
+# Copy package files
+COPY package*.json ./
+
 # Install dependencies
 RUN npm install
-RUN npm rebuild bcrypt --build-from-source
 
-# Expose the port that the backend will run on (e.g., 3000)
-EXPOSE 4001
-RUN chown -R node:node /app
+# Copy prisma schema and generate client
+COPY prisma ./prisma/
 RUN npx prisma generate
+
+# Copy rest of the application
+COPY . .
+
+# Set correct permissions
+RUN chown -R node:node /app
+
+# Switch to non-root user
 USER node
-# Command to run the backend (adjust as necessary)
-CMD ["npm", "run", "start"]
+
+EXPOSE 4001
+
+CMD ["npm", "start"]

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../Context/authContext";
 import {
@@ -10,10 +10,14 @@ import {
 	User,
 	LogOut,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
 	const [showUserMenu, setShowUserMenu] = useState(false);
 	const { logout } = useAuth();
+	const navigate = useNavigate();
+	const [searchTerm, setSearchTerm] = useState("");
+	const [showSuggestions, setShowSuggestions] = useState(false);
 
 	const styles = {
 		header: {
@@ -95,8 +99,73 @@ const Header = () => {
 				backgroundColor: "#f3f2ef",
 			},
 		},
+		searchContainer: {
+			display: "flex",
+			alignItems: "center",
+			backgroundColor: "#EEF3F8",
+			padding: "8px 16px",
+			borderRadius: "4px",
+			width: "280px",
+			marginLeft: "16px",
+		},
+		searchInput: {
+			border: "none",
+			backgroundColor: "transparent",
+			marginLeft: "8px",
+			outline: "none",
+			width: "100%",
+			fontSize: "14px",
+		},
+		searchWrapper: {
+			position: "relative",
+		},
+		suggestions: {
+			position: "absolute",
+			top: "100%",
+			left: 0,
+			right: 0,
+			backgroundColor: "white",
+			borderRadius: "4px",
+			boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+			marginTop: "4px",
+			zIndex: 1000,
+		},
+		suggestion: {
+			padding: "8px 16px",
+			cursor: "pointer",
+			fontSize: "14px",
+			color: "rgba(0,0,0,0.6)",
+			"&:hover": {
+				backgroundColor: "#f3f2ef",
+			},
+		},
 	};
-
+	const availableRoutes = [
+		{ path: "/home", label: "Home" },
+		{ path: "/profile", label: "My Profile" },
+		{ path: "/users", label: "Find People" },
+		{ path: "/connection-requests", label: "Network Requests" },
+		{ path: "/chat", label: "Messages" },
+		{ path: "/about", label: "About" },
+		{ path: "/contact", label: "Contact" },
+		{ path: "/support", label: "Support" },
+	];
+	const filteredRoutes = availableRoutes.filter((route) =>
+		route.label.toLowerCase().includes(searchTerm.toLowerCase())
+	);
+	const handleSearch = (e) => {
+		e.preventDefault();
+		if (searchTerm.trim()) {
+			const route = availableRoutes.find((r) =>
+				r.label.toLowerCase().includes(searchTerm.toLowerCase())
+			);
+			if (route) {
+				navigate(route.path);
+				setSearchTerm("");
+				setShowSuggestions(false);
+			}
+		}
+	};
 	return (
 		<header style={styles.header}>
 			<div style={styles.nav}>
@@ -124,9 +193,38 @@ const Header = () => {
 					</svg>
 					{/* <img src="Assets/Images/Logo.png" alt="Logo" maxHeight="30" /> */}
 				</Link>
-				<div style={styles.search}>
-					<Search size={20} color="#666666" />
-					<input type="text" placeholder="Search" style={styles.searchInput} />
+				<div style={styles.searchWrapper}>
+					<form onSubmit={handleSearch} style={styles.searchContainer}>
+						<Search style={styles.searchIcon} size={20} />
+						<input
+							type="text"
+							placeholder="Search pages..."
+							value={searchTerm}
+							onChange={(e) => {
+								setSearchTerm(e.target.value);
+								setShowSuggestions(true);
+							}}
+							onFocus={() => setShowSuggestions(true)}
+							style={styles.searchInput}
+						/>
+					</form>
+					{showSuggestions && searchTerm && (
+						<div style={styles.suggestions}>
+							{filteredRoutes.map((route) => (
+								<div
+									key={route.path}
+									style={styles.suggestion}
+									onClick={() => {
+										navigate(route.path);
+										setSearchTerm("");
+										setShowSuggestions(false);
+									}}
+								>
+									{route.label}
+								</div>
+							))}
+						</div>
+					)}
 				</div>
 			</div>
 

@@ -1,4 +1,16 @@
+-- Create user if not exists
+\c postgres postgres;
+
+CREATE USER farid WITH PASSWORD 'fjfj';
+
+-- Create database
 CREATE DATABASE wbd;
+
+-- Grant privileges
+GRANT ALL PRIVILEGES ON DATABASE wbd TO farid;
+
+-- Connect to database
+
 \c wbd;
 -- Table structure for table "user"
 CREATE TABLE "users" (
@@ -74,3 +86,6 @@ CREATE TABLE "push_subscriptions" (
   CONSTRAINT push_subscriptions_user_id_fk FOREIGN KEY (user_id) 
     REFERENCES users (id) ON DELETE SET NULL
 );
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO farid;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO farid;

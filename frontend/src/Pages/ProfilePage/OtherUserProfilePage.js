@@ -229,9 +229,10 @@ const OtherUserProfile = () => {
 			try {
 				console.log(userData);
 				const response = await api.get(`/connections/status/${userData.id}`);
-				if (response.isPending) {
+				// console.log(response);
+				if (response.data.isPending) {
 					setConnectionStatus("pending");
-				} else if (response.isConnected) {
+				} else if (response.data.isConnected) {
 					setConnectionStatus("connected");
 				} else {
 					setConnectionStatus("not connected");
@@ -275,7 +276,8 @@ const OtherUserProfile = () => {
 		if (!confirmed) return;
 
 		try {
-			await api.delete(`/connections/${userData.id}`);
+			const response = await api.delete(`/connections/${userData.id}`);
+			console.log(response);
 			setConnectionStatus("not connected");
 			setSnackbarMessage({
 				text: "Connection removed successfully",
@@ -325,32 +327,8 @@ const OtherUserProfile = () => {
 	if (loading) return <div style={styles.container}>Loading...</div>;
 	if (error) return <div style={styles.container}>Error: {error}</div>;
 
-	const renderConnectionActions = () => {
-		switch (connectionStatus) {
-			case "connected":
-				return (
-					<div>
-						<button onClick={handleMessage}>Message</button>
-						<button onClick={handleDisconnect}>Remove Connection</button>
-					</div>
-				);
-			case "pending":
-				return (
-					<div>
-						<button onClick={handleAccept}>Accept</button>
-						<button onClick={handleReject}>Reject</button>
-					</div>
-				);
-			case "not connected":
-				return (
-					<div>
-						<button onClick={handleConnect}>Connect</button>
-					</div>
-				);
-			default:
-				return null;
-		}
-	};
+
+	// console.log(userData);
 	return (
 		<div style={styles.container}>
 			<div style={styles.header}>
@@ -381,22 +359,13 @@ const OtherUserProfile = () => {
 								</>
 							)}
 							{connectionStatus === "pending" && (
-								<>
-									<button
-										style={{ ...styles.buttonBase, ...styles.primaryButton }}
-										onClick={handleAccept}
-									>
-										<Check size={16} />
-										Accept
-									</button>
-									<button
-										style={{ ...styles.buttonBase, ...styles.secondaryButton }}
-										onClick={handleReject}
-									>
-										<X size={16} />
-										Reject
-									</button>
-								</>
+								<button
+									style={{ ...styles.buttonBase, ...styles.primaryButton }}
+									
+								>
+									<UserPlus size={16} />
+									Pending
+								</button>
 							)}
 							{connectionStatus === "not connected" && (
 								<button

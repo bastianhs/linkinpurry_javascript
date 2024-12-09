@@ -202,6 +202,7 @@ const FeedPage = () => {
 		) {
 			fetchFeeds();
 		}
+		console.log(feeds);
 	}, [fetchFeeds]);
 
 	useEffect(() => {
@@ -243,7 +244,7 @@ const FeedPage = () => {
 					<div key={feed.id} style={styles.feedCard}>
 						<div style={styles.postHeader}>
 							<img
-								src={`http://localhost:4001/${feed.user.profile_photo}`}
+								src={`http://localhost:4001/${feed.user.profile_photo_path}`}
 								alt={feed.user.username}
 								style={styles.avatar}
 							/>
