@@ -1,6 +1,5 @@
 import prisma from "../database/prismaClient.js";
 
-
 const getConnections = async () => {
 	return await prisma.connection.findMany();
 };
@@ -87,19 +86,30 @@ const getUserConnections = async (from_id) => {
 		},
 	});
 
-	return connections.map((connection) => {
+	const uniqueConnections = new Map();
+
+	connections.forEach((connection) => {
 		const otherUser =
 			connection.from_id === BigInt(from_id)
 				? connection.users_connection_to_idTousers
 				: connection.users_connection_from_idTousers;
 
-		return {
-			id: Number(otherUser.id),
-			username: otherUser.username,
-			profile_photo_path: otherUser.profile_photo_path,
-			created_at: connection.created_at,
-		};
+		const userId = Number(otherUser.id);
+		if (
+			!uniqueConnections.has(userId) ||
+			connection.created_at > uniqueConnections.get(userId).created_at
+		) {
+			uniqueConnections.set(userId, {
+				id: userId,
+				username: otherUser.username,
+				profile_photo_path: otherUser.profile_photo_path,
+				created_at: connection.created_at,
+			});
+		}
 	});
+	return Array.from(uniqueConnections.values()).sort(
+		(a, b) => b.created_at - a.created_at
+	);
 };
 
 const createConnection = async (from_id, to_id) => {

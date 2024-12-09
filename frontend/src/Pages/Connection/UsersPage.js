@@ -1,93 +1,93 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const styles = {
     page: {
-        padding: '20px',
-        fontFamily: 'Arial, sans-serif',
-        backgroundColor: '#f3f2ef',
-        minHeight: '100vh',
+        padding: "20px",
+        fontFamily: "Arial, sans-serif",
+        backgroundColor: "#f3f2ef",
+        minHeight: "100vh",
     },
     header: {
-        textAlign: 'center',
-        marginBottom: '20px',
-        color: '#0073b1',
+        textAlign: "center",
+        marginBottom: "20px",
+        color: "#0073b1",
     },
     inputContainer: {
-        display: 'flex',
-        justifyContent: 'center',
-        marginBottom: '20px',
+        display: "flex",
+        justifyContent: "center",
+        marginBottom: "20px",
     },
     input: {
-        padding: '10px',
-        width: '60%',
-        maxWidth: '400px',
-        border: '1px solid #ccc',
-        borderRadius: '4px',
-        marginRight: '10px',
+        padding: "10px",
+        width: "60%",
+        maxWidth: "400px",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        marginRight: "10px",
     },
     button: {
-        background: '#0073b1',
-        color: '#fff',
-        border: 'none',
-        padding: '10px 20px',
-        borderRadius: '4px',
-        cursor: 'pointer',
+        background: "#0073b1",
+        color: "#fff",
+        border: "none",
+        padding: "10px 20px",
+        borderRadius: "4px",
+        cursor: "pointer",
     },
     buttonHover: {
-        background: '#0056b3',
+        background: "#0056b3",
     },
     list: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
+        display: "flex",
+        flexWrap: "wrap",
+        justifyContent: "center",
     },
     card: {
-        background: '#fff',
-        border: '1px solid #ddd',
-        borderRadius: '4px',
-        padding: '20px',
-        margin: '10px',
-        textAlign: 'center',
-        width: '250px',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-        transition: 'transform 0.2s',
+        background: "#fff",
+        border: "1px solid #ddd",
+        borderRadius: "4px",
+        padding: "20px",
+        margin: "10px",
+        textAlign: "center",
+        width: "250px",
+        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+        transition: "transform 0.2s",
     },
     cardHover: {
-        transform: 'scale(1.05)',
+        transform: "scale(1.05)",
     },
     imgContainer: {
-        display: 'flex',
-        justifyContent: 'center',
-        marginBottom: '10px',
+        display: "flex",
+        justifyContent: "center",
+        marginBottom: "10px",
     },
     img: {
-        borderRadius: '50%',
-        width: '100px',
-        height: '100px',
-        objectFit: 'cover',
+        borderRadius: "50%",
+        width: "100px",
+        height: "100px",
+        objectFit: "cover",
     },
     name: {
-        fontSize: '1.2em',
-        marginBottom: '10px',
-        color: '#0073b1',
+        fontSize: "1.2em",
+        marginBottom: "10px",
+        color: "#0073b1",
     },
     error: {
-        color: 'red',
-        textAlign: 'center',
-        marginTop: '20px',
+        color: "red",
+        textAlign: "center",
+        marginTop: "20px",
     },
 };
 
 const UsersPage = () => {
     const [users, setUsers] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState("");
     const [authenticated, setAuthenticated] = useState(false);
     const [error, setError] = useState(null);
 
-    const fetchUsers = async (search = '') => {
+    const fetchUsers = async (search = "") => {
         try {
-            const response = await axios.get('http://localhost:4001/api/users', {
+            const response = await axios.get("http://localhost:4001/api/users", {
                 params: { search }
             });
             if (response.status === 200) {
@@ -95,12 +95,12 @@ const UsersPage = () => {
                 setError(null);
             } else {
                 setUsers([]);
-                setError('Failed to fetch users');
+                setError("Failed to fetch users");
             }
         } catch (error) {
-            console.error('There was an error fetching the users!', error);
+            console.error("There was an error fetching the users!", error);
             setUsers([]);
-            setError('There was an error fetching the users!');
+            setError("There was an error fetching the users!");
         }
     };
 
@@ -109,7 +109,7 @@ const UsersPage = () => {
     }, []);
 
     useEffect(() => {
-        console.log('Users state:', users);
+        console.log("Users state:", users);
     }, [users]);
 
     const handleSearch = (event) => {
@@ -152,7 +152,7 @@ const UsersPage = () => {
                             key={user.id}
                             style={styles.card}
                             onMouseOver={(e) => e.currentTarget.style.transform = styles.cardHover.transform}
-                            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                            onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
                         >
                         <div style={styles.imgContainer}>
                             <img src={user.profile_photo_path} alt={`${user.username}`} style={styles.img} />

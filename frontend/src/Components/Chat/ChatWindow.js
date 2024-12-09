@@ -1,9 +1,15 @@
 import React, { useEffect, useRef } from "react";
 import MessageInput from "./MessageInput";
-import { useAuth } from "../../Context/authContext";
+import TypingIndicator from "./TypingIndicator";
 
-const ChatWindow = ({ messages, activeChat, onSendMessage,user }) => {
-	
+const ChatWindow = ({
+	messages,
+	activeChat,
+	onSendMessage,
+	user,
+	isTyping,
+	onTyping,
+}) => {
 	const styles = {
 		emptyState: {
 			display: "flex",
@@ -74,7 +80,7 @@ const ChatWindow = ({ messages, activeChat, onSendMessage,user }) => {
 
 	useEffect(() => {
 		scrollToBottom();
-	}, [messages]);
+	}, [messages,isTyping]);
 
 	if (!activeChat) {
 		return (
@@ -83,17 +89,16 @@ const ChatWindow = ({ messages, activeChat, onSendMessage,user }) => {
 			</div>
 		);
 	}
-    // console.log(messages);
-    // console.log(user);
+	// console.log(messages);
+	// console.log(user);
 	return (
 		<div style={styles.chatWindow}>
 			<div style={styles.header}>
-				<h3 style={styles.headerTitle}>{activeChat.username}</h3>
+				<h3 style={styles.headerTitle}>{activeChat.full_name}</h3>
 			</div>
 
 			<div style={styles.messageList}>
 				{messages.map((msg) => {
-                    
 					const isSentByMe = msg.from_id === user;
 					return (
 						<div
@@ -104,14 +109,7 @@ const ChatWindow = ({ messages, activeChat, onSendMessage,user }) => {
 							}}
 						>
 							<div style={styles.messageContent}>{msg.message}</div>
-							<span
-								style={{
-									...styles.timestamp,
-									color: isSentByMe
-										? "rgba(255, 255, 255, 0.7)"
-										: "rgba(0, 0, 0, 0.5)",
-								}}
-							>
+							<span style={styles.timestamp}>
 								{new Date(msg.timestamp).toLocaleTimeString([], {
 									hour: "2-digit",
 									minute: "2-digit",
@@ -120,10 +118,11 @@ const ChatWindow = ({ messages, activeChat, onSendMessage,user }) => {
 						</div>
 					);
 				})}
+				{isTyping && <TypingIndicator />}
 				<div ref={messagesEndRef} />
 			</div>
 
-			<MessageInput onSendMessage={onSendMessage} />
+			<MessageInput onSendMessage={onSendMessage} onTyping={onTyping} />
 		</div>
 	);
 };

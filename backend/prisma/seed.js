@@ -2,17 +2,92 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
+const firstNames = [
+	"Bambang",
+	"Siti",
+	"Ahmad",
+	"Dewi",
+	"Budi",
+	"Rina",
+	"Agus",
+	"Sri",
+	"Wahyu",
+	"Ani",
+	"Dedi",
+	"Putri",
+	"Rudi",
+	"Nina",
+	"Eko",
+	"Maya",
+	"Hendra",
+	"Dina",
+	"Joko",
+	"Lina",
+	"Salsa",
+];
 
+const lastNames = [
+	"Wijaya",
+	"Kusuma",
+	"Suryadi",
+	"Wati",
+	"Santoso",
+	"Sari",
+	"Putra",
+	"Dewi",
+	"Hermawan",
+	"Permata",
+	"Saputra",
+	"Utami",
+	"Nugroho",
+	"Indah",
+	"Pratama",
+	"Lestari",
+	"Hidayat",
+	"Mulia",
+	"Susanto",
+	"Pertiwi",
+];
+
+function getRandomFullName() {
+	const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+	const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+	return `${firstName} ${lastName}`;
+}
+async function truncateAllTables() {
+	try {
+
+		// Truncate tables in order (children first, then parents)
+		await prisma.$transaction([
+			prisma.$executeRaw`TRUNCATE TABLE "chat" CASCADE;`,
+			prisma.$executeRaw`TRUNCATE TABLE "connection" CASCADE;`,
+			prisma.$executeRaw`TRUNCATE TABLE "connection_request" CASCADE;`,
+			prisma.$executeRaw`TRUNCATE TABLE "feed" CASCADE;`,
+			prisma.$executeRaw`TRUNCATE TABLE "push_subscriptions" CASCADE;`,
+			prisma.$executeRaw`TRUNCATE TABLE "users" CASCADE;`,
+		]);
+
+
+
+		console.log("All tables truncated successfully");
+	} catch (error) {
+		console.error("Error truncating tables:", error);
+		throw error;
+	}
+}
 async function main() {
+	await truncateAllTables();
 	// Create 20 users
+
 	const users = [];
 	for (let i = 1; i <= 20; i++) {
 		const user = await prisma.users.create({
 			data: {
 				username: `user${i}`,
 				email: `user${i}@example.com`,
-				password_hash: '$2b$10$KaHUqj4h2aJG0k1qySOhceF3iYPFrfvtzzPzkI8IYct1G4vSh7oKK',
-				full_name: `User ${i}`,
+				password_hash:
+					"$2b$10$KaHUqj4h2aJG0k1qySOhceF3iYPFrfvtzzPzkI8IYct1G4vSh7oKK",
+				full_name: getRandomFullName(),
 				work_history: `Software Engineer at Company ${i}`,
 				skills: `JavaScript, Python, SQL, React ${i}`,
 				profile_photo_path: ``,

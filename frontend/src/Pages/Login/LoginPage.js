@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEyeSlash, faEye } from "@fortawesome/free-solid-svg-icons";
 import Snackbar from "../../Components/Snackbar";
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../Context/authContext';
-import api from '../../Utils/api';
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../Context/authContext";
 
 const styles = {
 	container: {
@@ -47,7 +46,7 @@ const styles = {
 		fontSize: "16px",
 		outline: "none",
 		transition: "border-color 0.3s ease",
-		height: "56px", 
+		height: "56px",
 	},
 	inputFocused: {
 		borderColor: "#0a66c2",
@@ -55,7 +54,7 @@ const styles = {
 
 	label: {
 		position: "absolute",
-		top: "16px", 
+		top: "16px",
 		left: "12px",
 		fontSize: "16px",
 		color: "rgba(0, 0, 0, 0.6)",
@@ -109,8 +108,8 @@ const styles = {
 };
 
 const LoginPage = () => {
-    const { login } = useAuth();
-    const navigate = useNavigate();
+	const { login } = useAuth();
+	const navigate = useNavigate();
 	const [showPassword, setShowPassword] = useState(false);
 	const [formData, setFormData] = useState({
 		email: "",
@@ -133,23 +132,36 @@ const LoginPage = () => {
 		try {
 			const response = await fetch("http://localhost:4001/api/auth/login", {
 				method: "POST",
-                credentials: 'include',
+				credentials: "include",
 				headers: {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify(formData),
 			});
 			const data = await response.json();
+			console.log(data);
 			if (data.success) {
-                console.log(data.body.token);
-                login();
-				setSnackbarMessage(data.message || "Login successful");
-                navigate('/dashboard');
+				login();
+				setSnackbarMessage({
+					text: data.message || "Login successful",
+					type: "success",
+				});
+				const timeoutId = setTimeout(() => {
+					navigate("/home");
+				}, 3000);
+				return () => clearTimeout(timeoutId);
 			} else {
-				setSnackbarMessage(data.message || "Login failed. Please try again.");
+				setSnackbarMessage({
+					text: data.message,
+					type: "error",
+					errors: data.errors || [],
+				});
 			}
 		} catch (error) {
-			setSnackbarMessage("Network error occurred. Please try again.");
+			setSnackbarMessage({
+				text: "Network error occurred",
+				type: "error",
+			});
 		}
 	};
 
@@ -258,8 +270,10 @@ const LoginPage = () => {
 			</div>
 			{snackbarMessage && (
 				<Snackbar
-					message={snackbarMessage}
-					onClose={() => setSnackbarMessage("")}
+					message={snackbarMessage.text}
+					type={snackbarMessage.type}
+					errors={snackbarMessage.errors}
+					onClose={() => setSnackbarMessage(null)}
 				/>
 			)}
 		</div>
