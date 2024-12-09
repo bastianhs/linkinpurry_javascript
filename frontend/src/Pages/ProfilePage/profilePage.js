@@ -286,7 +286,7 @@ const UserProfile = () => {
 
 				setTimeout(() => {
 					onCancel();
-				}, 2000);
+				}, 5000);
 			} catch (error) {
 				setSnackbarMessage({
 					text: error.response?.data?.error || "Error updating profile",

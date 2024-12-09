@@ -7,6 +7,7 @@ import {
 	getProfile,
 	createProfile,
 	getOtherProfile,
+  updateProfile,
 } from "../Controller/userController.js";
 import {
 	authenticate,
@@ -159,13 +160,6 @@ router.put("/:id", authenticate, upload.single('profile_photo'), async (req, res
 router.get("/other/:username", profileAuthenticate, async (req, res) => {
 	try {
 		const { username } = req.params;
-
-    const updatedProfile = await updateProfile(id, full_name, username, email, password, work_history, skills, profile_photo);
-    res.json(updatedProfile);
-  } catch (error) {
-    console.error("Profile update error:", error);
-    res.status(400).json({ error: "Internal server error" });
-  }try{
 		if (!username) {
 			console.log(!username);
 			return res.status(400).json({

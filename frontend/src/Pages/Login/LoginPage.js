@@ -154,7 +154,7 @@ const LoginPage = () => {
 				setSnackbarMessage({
 					text: data.message,
 					type: "error",
-					errors: data.errors || [],
+					errors: [data.errors] || [],
 				});
 			}
 		} catch (error) {

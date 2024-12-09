@@ -32,7 +32,7 @@ const MessageInput = ({ onSendMessage, onTyping }) => {
 
 	const handleChange = (e) => {
 		setMessage(e.target.value);
-		onTyping(); // Trigger typing event
+		onTyping(true); 
 	};
 
 	const handleSubmit = (e) => {
