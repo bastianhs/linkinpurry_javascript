@@ -1,5 +1,7 @@
 import feedModel from "../Model/feedModel.js";
-
+import connectionmodel from "../Model/connectionModel.js";
+import  sendNotification from "../Util/pushNotification.js";
+import { getUserSubscription } from "../Model/pushSubscriptionsModel.js";
 const getFeed = async (req, res) => {
     try {
         const userId = parseInt(req.user?.userId);
@@ -44,7 +46,19 @@ const createFeed = async(req, res) => {
                 user_id: Number(newFeed.user_id)
             }
         });
-
+        const connections = await connectionmodel.getUserConnections(user_id);
+        const payload = {
+          title: 'New Post',
+          body: `${newFeed.user.username} has a new post`,
+          url: `/post/${newFeed.id}`
+        };
+    
+        for (const connection of connections) {
+          const subscriptions = await getUserSubscription(connection.id);
+          subscriptions.forEach(subscription => {
+            sendNotification(subscription, payload);
+          });
+        }
     } catch (error) {
         res.status(500).json({
             success: false,

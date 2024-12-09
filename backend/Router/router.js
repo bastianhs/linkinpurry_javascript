@@ -65,7 +65,6 @@ router.get("/:id", profileAuthenticate, async (req, res) => {
     }
 
     const profile = await getProfile(id);
-    const loggedId = req.user?.userId || null;
     if (!profile) {
       return res.status(404).json({
         success: false,
@@ -83,7 +82,7 @@ router.get("/:id", profileAuthenticate, async (req, res) => {
         updated_at: profile.updated_at || "",
         email: profile.email || "",
         username: profile.username || "",
-        name: profile.name || "",
+        full_name: profile.full_name || "",
         work_history: profile.work_history || "",
         skills: profile.skills || "",
         connection_count: profile.connection_count || 0,
@@ -120,7 +119,7 @@ router.post("/", async (req, res) => {
 router.put("/:id", authenticate, upload.single('profile_photo'), async (req, res) => {
   try {
     const logged_id = req.user?.userId || null;
-    const { username, email, password, work_history, skills } = req.body;
+    const { username, email, password, work_history, skills, full_name } = req.body;
     const { id } = req.params;
     const profile_photo = req.file ? req.file.path : null;
 
@@ -128,7 +127,7 @@ router.put("/:id", authenticate, upload.single('profile_photo'), async (req, res
       return res.status(401).json({ message: "not your account, please login." });
     }
 
-    const updatedProfile = await updateProfile(id, username, email, password, work_history, skills, profile_photo);
+    const updatedProfile = await updateProfile(id, full_name, username, email, password, work_history, skills, profile_photo);
     res.json(updatedProfile);
   } catch (error) {
     console.error("Profile update error:", error);

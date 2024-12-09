@@ -16,7 +16,7 @@ import {
   faUserPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import api from "../../Utils/api";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 const UserProfile = () => {
   const [userData, setUserData] = useState(null);
@@ -27,17 +27,23 @@ const UserProfile = () => {
     isConnected: false,
     isPending: false
   });
-  const { id } = useParams(); 
-
+  const { id } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const meResponse = await api.get('http://localhost:4001/api/profile/me');
-        const currentUserId = meResponse.data.body.userId;
-
-        setIsOwnProfile(currentUserId === id);
-
+        let userId = id;
+        if (!userId) {
+          const meResponse = await api.get('http://localhost:4001/api/profile/me');
+          userId = meResponse.data.body.userId;
+          setIsOwnProfile(true);
+          navigate(`/profile/${userId}`, { replace: true });
+        } else {
+          const meResponse = await api.get('http://localhost:4001/api/profile/me');
+          userId = meResponse.data.body.userId;
+          setIsOwnProfile(userId === id);
+        }
         const response = await api.get(`http://localhost:4001/api/profile/${id}`);
         const data = response.data.body; 
         console.log(data);
@@ -47,7 +53,7 @@ const UserProfile = () => {
           email: data.email,
           created_at: data.created_at,
           updated_at: data.updated_at,
-          name: data.name,
+          full_name: data.full_name,
           profile_photo: data.profile_photo,
           work_history: data.work_history,
           skills: data.skills,
@@ -76,7 +82,7 @@ const UserProfile = () => {
   
     fetchUserData();
     // console.log(userData.profile_photo);
-  }, [id, isOwnProfile]);
+  }, [id, isOwnProfile, navigate]);
   const handleConnectionRequest = async () => {
     try {
       await api.post('http://localhost:4001/api/connection-requests', {
@@ -98,24 +104,31 @@ const UserProfile = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [profilePhoto, setProfilePhoto] = useState(userData.profile_photo || null);
     const fileInputRef = useRef(null);
-
+  
     const [formData, setFormData] = useState({
-      name: userData.name || '',
-      email: userData.email || '',
-      username: userData.username || '',
-      password: '',
-      work_history: userData.work_history || '',
-      skills: userData.skills || '',
+      full_name: userData?.full_name || '',
+      email: userData?.email || '',
+      username: userData?.username || '',
+      password: '',  // typically leave blank for security
+      work_history: userData?.work_history || '',
+      skills: userData?.skills || '',
       profile_photo: null
     });
-
+  
     const handleInputChange = (e) => {
       const { name, value } = e.target;
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
+      setFormData(prevData => {
+        const newData = {
+          ...prevData,
+          [name]: value
+        };
+        console.log(`Updated ${name}:`, value);
+        console.log('Full form data:', newData);
+        return newData;
+      });
     };
+  
+  
 
     const handlePhotoUpload = (e) => {
       const file = e.target.files[0];
@@ -143,23 +156,35 @@ const UserProfile = () => {
       }
     };
 
+
     const handleSubmit = async (e) => {
       e.preventDefault();
       
+      // Create a new FormData object
       const submitData = new FormData();
       
+      // Only append non-empty fields
       Object.keys(formData).forEach(key => {
-        if (key !== 'profile_photo' && formData[key]) {
+        if (formData[key] && key !== 'profile_photo') {
           submitData.append(key, formData[key]);
         }
       });
     
+      // Append profile photo if present
       if (formData.profile_photo) {
         submitData.append('profile_photo', formData.profile_photo);
       }
-      const meResponse = await api.get('http://localhost:4001/api/profile/me');
-      const currentUserId = meResponse.data.body.userId;
+  
+      // Extensive logging
+      console.log('Final formData:', formData);
+      for (let [key, value] of submitData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      
       try {
+        const meResponse = await api.get('http://localhost:4001/api/profile/me');
+        const currentUserId = meResponse.data.body.userId;
+        
         const response = await api.put(`http://localhost:4001/api/profile/${currentUserId}`, submitData, {
           headers: {
             'Content-Type': 'multipart/form-data'
@@ -170,6 +195,7 @@ const UserProfile = () => {
         onCancel();
       } catch (error) {
         console.error('Error updating profile:', error);
+        alert('Failed to update profile. Please try again.');
       }
     };
     if (loading) {
@@ -240,17 +266,19 @@ const UserProfile = () => {
                 <h2 className="text-lg font-semibold mb-4 border-b pb-2">Personal Details</h2>
                 <div className="grid grid-cols-2 gap-4">
                   <TextInput 
-                    id="name" 
+                    id="full_name" 
                     label="Full Name" 
                     type="text" 
+                    name="full_name"
                     placeholder="Enter your full name"
-                    value={formData.name}
+                    value={formData.full_name}
                     onChange={handleInputChange}
                   />
                   <TextInput 
                     id="username" 
                     label="Username" 
                     type="text" 
+                    name="username"
                     placeholder="Enter your username"
                     value={formData.username}
                     onChange={handleInputChange}
@@ -259,6 +287,7 @@ const UserProfile = () => {
                     id="email" 
                     label="Email" 
                     type="email" 
+                    name="email"
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={handleInputChange}
@@ -267,6 +296,7 @@ const UserProfile = () => {
                     id="password"
                     label="New Password"
                     showPassword={showPassword}
+                    name="password"
                     setShowPassword={setShowPassword}
                     value={formData.password}
                     onChange={handleInputChange}
@@ -366,7 +396,12 @@ const UserProfile = () => {
                     <ProfileItem
                       icon={faUser}
                       label="Full Name"
-                      value={userData.name || userData.username}
+                      value={userData.full_name}
+                    />
+                    <ProfileItem
+                      icon={faUser}
+                      label="Username"
+                      value={userData.username}
                     />
                     <ProfileItem
                       icon={faEnvelope}
@@ -473,7 +508,7 @@ const LoadingSkeleton = () => (
 
 
 
-const TextInput = ({ id, label, type, placeholder }) => (
+const TextInput = ({ id, label, type, placeholder, value, onChange }) => (
   <div>
     <label htmlFor={id} className="block text-sm font-medium text-gray-700">
       {label}
@@ -482,13 +517,15 @@ const TextInput = ({ id, label, type, placeholder }) => (
       type={type}
       id={id}
       name={id}
+      value={value}
+      onChange={onChange}
       className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
       placeholder={placeholder}
     />
   </div>
 );
 
-const PasswordInput = ({ id, label, showPassword, setShowPassword }) => (
+const PasswordInput = ({ id, label, showPassword, setShowPassword, value, onChange }) => (
   <div>
     <label htmlFor={id} className="block text-sm font-medium text-gray-700">
       {label}
@@ -498,6 +535,8 @@ const PasswordInput = ({ id, label, showPassword, setShowPassword }) => (
         type={showPassword ? "text" : "password"}
         id={id}
         name={id}
+        value={value}
+        onChange={onChange}
         className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         placeholder="Enter new password"
       />
