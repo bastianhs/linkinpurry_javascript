@@ -109,7 +109,7 @@ router.get("/:id",profileAuthenticate, async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
 
     const newProfile = await createProfile(name, email, password);
     res.status(201).json(newProfile);

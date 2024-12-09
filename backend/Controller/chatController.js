@@ -1,4 +1,6 @@
 import prisma from "../database/prismaClient.js";
+import { BaseResponseDTO } from "../Dto/baseDto.js";
+import { ChatRequestDTO, ChatResponseDTO } from "../Dto/chatDto.js";
 
 const formatUser = (user) => ({
 	id: user.id.toString(),
@@ -10,7 +12,7 @@ const formatUser = (user) => ({
 const getChatsByUser = async (req, res) => {
 	try {
 		const userId = BigInt(req.user.userId);
-		console.log("UserId (BigInt):", userId.toString());
+		// console.log("UserId (BigInt):", userId.toString());
 
 		// Simplified query
 		const chats = await prisma.chat.findMany({
@@ -58,7 +60,9 @@ const getChatsByUser = async (req, res) => {
 			return acc;
 		}, {});
 
-		const formattedChats = Object.values(uniqueChats);
+		const formattedChats = Object.values(uniqueChats).sort(
+			(a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+		);
 		res.json({ chats: formattedChats, userId: userId.toString() });
 	} catch (error) {
 		console.error("Error in getChatsByUser:", error);
@@ -106,64 +110,18 @@ const getMessages = async (req, res) => {
 
 const createChat = async (req, res) => {
 	try {
-		const fromId = req.user.userId;
-		const { to_id } = req.body;
-
-		if (!to_id) {
-			return res.status(400).json({ error: "Recipient ID is required" });
-		}
-
-		const existingChat = await prisma.chat.findFirst({
-			where: {
-				AND: [
-					{
-						OR: [
-							{ AND: [{ from_id: fromId }, { to_id: to_id }] },
-							{ AND: [{ from_id: to_id }, { to_id: fromId }] },
-						],
-					},
-					{
-						NOT: {
-							AND: [{ from_id: fromId }, { to_id: fromId }],
-						},
-					},
-				],
-			},
-			include: {
-				users_chat_from_idTousers: true,
-				users_chat_to_idTousers: true,
-			},
-		});
-		console.log(existingChat);
-
-		// Create new chat
-		const newChat = await prisma.chat.create({
-			data: {
-				from_id: fromId,
-				to_id: to_id,
-				message: "Started a conversation",
-			},
-			include: {
-				users_chat_from_idTousers: true,
-				users_chat_to_idTousers: true,
-			},
+		const chatDto = new ChatRequestDTO({
+			from_id: req.user.userId,
+			to_id: req.body.to_id,
+			message: req.body.message,
 		});
 
-		const formattedNewChat = {
-			id: newChat.id.toString(),
-			message: newChat.message,
-			timestamp: newChat.timestamp,
-			otherUser: {
-				...newChat.users_chat_to_idTousers,
-				id: newChat.users_chat_to_idTousers.id.toString(),
-			},
-		};
+		const newChat = await chatModel.createChat(chatDto);
+		const responseDto = new ChatResponseDTO(newChat);
 
-		res.status(201).json(formattedNewChat);
+		return res.status(201).json(BaseResponseDTO.success(responseDto));
 	} catch (error) {
-		console.error("Create chat error:", error);
-		res.status(500).json({ error: "Failed to create chat" });
+		return res.status(500).json(BaseResponseDTO.error("Failed to create chat"));
 	}
 };
-
 export { getChatsByUser, getMessages, createChat };

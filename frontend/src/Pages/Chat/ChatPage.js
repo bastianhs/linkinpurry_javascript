@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 import ChatList from "../../Components/Chat/ChatList";
 import ChatWindow from "../../Components/Chat/ChatWindow";
 import NewChat from "../../Components/Chat/NewChat";
-import { useAuth } from "../../Context/authContext";
+// import { useAuth } from "../../Context/authContext";
 
 const ChatPage = () => {
 	const styles = {
@@ -69,20 +69,22 @@ const ChatPage = () => {
 		},
 	};
 
-	const [user,setUser]=useState(null);
+	const [user, setUser] = useState(null);
 	const [socket, setSocket] = useState(null);
-	const [chats, setChats] = useState([]);
-	const [activeChat, setActiveChat] = useState(null);
-    const [chatList,setChatList]=useState([]);
+	// const [chats, setChats] = useState([]);
+	// const [activeChat, setActiveChat] = useState(null);
+	const [chatList, setChatList] = useState([]);
 	const [messages, setMessages] = useState([]);
 	const [connections, setConnections] = useState([]);
-    const [toUser,setToUser]=useState(null);
+	const [toUser, setToUser] = useState(null);
+	const [isTyping, setIsTyping] = useState(false);
+	const [typingUsers, setTypingUsers] = useState(new Set());
+	const typingTimeoutRef = useRef(null);
 
-    
 	useEffect(() => {
 		const newSocket = io("http://localhost:4001", {
 			transports: ["websocket"],
-			withCredentials:true,
+			withCredentials: true,
 		});
 
 		newSocket.on("connect", () => {
@@ -90,9 +92,9 @@ const ChatPage = () => {
 		});
 
 		newSocket.on("message", (message) => {
-            message = message.message;
-            console.log("MESSAGE: ", message);
-            const formattedMessages = {
+			message = message.message;
+			console.log("MESSAGE: ", message);
+			const formattedMessages = {
 				id: message.id,
 				from_id: message.from_id,
 				to_id: message.to_id,
@@ -100,17 +102,16 @@ const ChatPage = () => {
 				timestamp: new Date(message.timestamp),
 				isSender: message.from_id === user,
 			};
-            console.log("SINI")
-            console.log(toUser);
-            console.log(formattedMessages.to_id);
+			console.log("SINI");
+			console.log(toUser);
+			console.log(formattedMessages.to_id);
 			if (message.to_id === formattedMessages.to_id) {
 				setMessages((prev) => [...prev, formattedMessages]);
-                
-			}else if (message.from_id === formattedMessages.from_id){
-                setMessages((prev) => [...prev, formattedMessages]);
-            }
+			} else if (message.from_id === formattedMessages.from_id) {
+				setMessages((prev) => [...prev, formattedMessages]);
+			}
 			fetchChats();
-            // fetchMessages(activeChat?.messages ? activeChat.messages[0].otherUser.id :[]);
+			// fetchMessages(activeChat?.messages ? activeChat.messages[0].otherUser.id :[]);
 		});
 		fetchConnections();
 		fetchChats();
@@ -124,7 +125,7 @@ const ChatPage = () => {
 
 	useEffect(() => {
 		console.log("ACTIVE CHAT: ", toUser);
-        
+
 		if (toUser) {
 			fetchMessages(toUser.id);
 		}
@@ -133,13 +134,12 @@ const ChatPage = () => {
 	const fetchChats = async () => {
 		try {
 			const response = await fetch("http://localhost:4001/api/chats", {
-                credentials:'include',
+				credentials: "include",
 			});
 			const data = await response.json();
-            setChatList(data.chats);
-            setUser(data.userId);
-            // console.log("CHATLIST: ", data.chats);
-            
+			setChatList(data.chats);
+			setUser(data.userId);
+			// console.log("CHATLIST: ", data.chats);
 		} catch (error) {
 			console.error("Error fetching chats:", error);
 		}
@@ -147,10 +147,10 @@ const ChatPage = () => {
 
 	const fetchMessages = async (to_id) => {
 		try {
-			console.log("TO ID: ", to_id);
+			// console.log("TO ID: ", to_id);
 			const response = await fetch(`http://localhost:4001/api/chats/messages`, {
 				method: "POST",
-                credentials:'include',
+				credentials: "include",
 				headers: {
 					"Content-Type": "application/json",
 				},
@@ -164,20 +164,21 @@ const ChatPage = () => {
 			}
 
 			const data = await response.json();
-            setUser(data.userId);
+			if (!user && data.userId) {
+				setUser(data.userId);
+			}
 
-			
 			const formattedMessages = data.messages.map((msg) => ({
 				id: msg.id,
 				from_id: msg.from_id,
 				to_id: msg.to_id,
 				message: msg.message,
 				timestamp: new Date(msg.timestamp),
-				isSender: msg.from_id === user?.userId,
+				isSender: msg.from_id === data.userId,
 			}));
 
 			setMessages(formattedMessages);
-            // console.log("MESSAGES: ", messages);
+			// console.log("MESSAGES: ", messages);
 		} catch (error) {
 			console.error("Error fetching messages:", error);
 		}
@@ -185,9 +186,12 @@ const ChatPage = () => {
 
 	const fetchConnections = async () => {
 		try {
-			const response = await fetch("http://localhost:4001/api/connections/user", {
-				credentials:'include',
-			});
+			const response = await fetch(
+				"http://localhost:4001/api/connections/user",
+				{
+					credentials: "include",
+				}
+			);
 			const data = await response.json();
 			// console.log(data.data);
 			setConnections(data.data);
@@ -202,22 +206,22 @@ const ChatPage = () => {
 				to_id: toUser.id,
 				message,
 			});
-            console.log("message: ", message);
-            fetchMessages(toUser.id);
+			console.log("message: ", message);
+			fetchMessages(toUser.id);
 		}
 	};
 
 	const handleStartChat = async (selectedUser) => {
 		try {
-            console.log("SELECTED USER: ", selectedUser);
+			console.log("SELECTED USER: ", selectedUser);
 			const response = await fetch("http://localhost:4001/api/chats", {
 				method: "POST",
-                credentials:'include',
+				credentials: "include",
 				headers: {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					to_id: selectedUser.id, 
+					to_id: selectedUser.id,
 				}),
 			});
 
@@ -226,21 +230,66 @@ const ChatPage = () => {
 			}
 
 			const newChat = await response.json();
-            console.log("NEW CHAT: ", newChat);
+			console.log("NEW CHAT: ", newChat);
 			setChatList((prev) => {
-                // console.log("PREV: ", prev);
+				// console.log("PREV: ", prev);
 				if (!prev.find((chat) => chat.to_id === newChat.to_id)) {
 					return [...prev, newChat];
 				}
 				return prev;
 			});
-            setToUser(selectedUser);
-            fetchChats();
+			setToUser(selectedUser);
+			fetchChats();
 			// setActiveChat(newChat);
 		} catch (error) {
 			console.error("Error creating chat:", error);
 		}
 	};
+	const handleTypingStart = () => {
+		if (socket && toUser) {
+			socket.emit("typing:start", { to_id: toUser.id });
+		}
+	};
+
+	const handleTypingStop = () => {
+		if (socket && toUser) {
+			socket.emit("typing:stop", { to_id: toUser.id });
+		}
+	};
+	const handleMessageInput = (e) => {
+		if (!isTyping) {
+			setIsTyping(true);
+			handleTypingStart();
+		}
+
+		if (typingTimeoutRef.current) {
+			clearTimeout(typingTimeoutRef.current);
+		}
+
+		typingTimeoutRef.current = setTimeout(() => {
+			setIsTyping(false);
+			handleTypingStop();
+		}, 1000);
+	};
+
+	useEffect(() => {
+		socket?.on("typing:start", (data) => {
+			setTypingUsers((prev) => new Set([...prev, data.from_id]));
+		});
+
+		socket?.on("typing:stop", (data) => {
+			setTypingUsers((prev) => {
+				const newSet = new Set(prev);
+				newSet.delete(data.from_id);
+				return newSet;
+			});
+		});
+
+		return () => {
+			socket?.off("typing:start");
+			socket?.off("typing:stop");
+		};
+	}, [socket]);
 
 	return (
 		<div style={styles.chatPage}>
@@ -250,7 +299,7 @@ const ChatPage = () => {
 					chats={chatList}
 					activeChat={toUser}
 					onSelectChat={setToUser}
-                    user = {user}
+					user={user}
 				/>
 			</div>
 			<div style={styles.main}>
@@ -258,7 +307,9 @@ const ChatPage = () => {
 					messages={messages}
 					activeChat={toUser}
 					onSendMessage={handleSendMessage}
-                    user={user}
+					user={user}
+					isTyping={typingUsers.has(toUser?.id)}
+					onTyping={handleMessageInput}
 				/>
 			</div>
 		</div>

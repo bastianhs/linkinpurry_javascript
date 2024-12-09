@@ -68,7 +68,7 @@ const getMessagesByChatId = async (userId, chatId) => {
 			timestamp: "asc",
 		},
 	});
-    console.log("MESSAGES: ", messages)
+    // console.log("MESSAGES: ", messages)
 	return messages.map((msg) => ({
 		id: msg.id.toString(),
 		from_id: msg.from_id.toString(),

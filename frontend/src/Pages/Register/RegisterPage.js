@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import Snackbar from "../../Components/Snackbar";
-import { useAuth } from '../../Context/authContext';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from "../../Context/authContext";
+import { useNavigate } from "react-router-dom";
 
 const RegisterForm = () => {
-    const { login } = useAuth();
-    const navigate = useNavigate();
+	const { login } = useAuth();
+	const navigate = useNavigate();
 	const [formData, setFormData] = useState({
 		username: "",
 		name: "",
@@ -16,7 +16,7 @@ const RegisterForm = () => {
 	});
 	const [showPassword, setShowPassword] = useState(false);
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState("");
+	const [snackbarMessage, setSnackbarMessage] = useState("");
 
 	const validatePassword = (password) => {
 		const requirements = {
@@ -43,26 +43,40 @@ const RegisterForm = () => {
 		e.preventDefault();
 
 		if (!formData.name) {
-			alert("Please enter your name");
+			setSnackbarMessage({
+				text: "Please enter your name",
+				type: "error",
+			});
 			return;
 		}
 		if (!validateEmail(formData.email)) {
-			alert("Please enter a valid email address");
+			setSnackbarMessage({
+				text: "Please enter a valid email address",
+				type: "error",
+			});
 			return;
 		}
 		if (!Object.values(validatePassword(formData.password)).every(Boolean)) {
-			alert("Please ensure your password meets all requirements");
+			setSnackbarMessage({
+				text: "Please ensure your password meets all requirements",
+				type: "error",
+			});
+
 			return;
 		}
 		if (formData.password !== formData.confirmPassword) {
-			alert("Passwords do not match");
+			setSnackbarMessage({
+				text: "Passwords do not match",
+				type: "error",
+			});
+
 			return;
 		}
 
 		try {
 			const response = await fetch("http://localhost:4001/api/auth/register", {
 				method: "POST",
-                credentials: 'include',
+				credentials: "include",
 				headers: {
 					"Content-Type": "application/json",
 				},
@@ -77,19 +91,28 @@ const RegisterForm = () => {
 			const data = await response.json();
 
 			if (data.success) {
-                login(); 
-                setSnackbarMessage(
-					data.message || "Registration successful"
-				);
-				navigate('/dashboard');
+				login();
+				setSnackbarMessage({
+					text: data.message || "Registration successful",
+					type: "success",
+				});
+				const timeoutId = setTimeout(() => {
+					navigate("/home");
+				}, 3000);
+				return () => clearTimeout(timeoutId);
 			} else {
-				setSnackbarMessage(
-					data.message || "Registration failed. Please try again."
-				);
+				setSnackbarMessage({
+					text: data.message,
+					type: "error",
+					errors: data.errors || [],
+				});
 			}
 		} catch (error) {
-            console.log(error)
-			setSnackbarMessage("Network error occurred. Please try again.");
+			setSnackbarMessage({
+				text: "Network error occurred",
+				type: "error",
+				errors: [error.message],
+			});
 		}
 	};
 
@@ -344,8 +367,10 @@ const RegisterForm = () => {
 			</div>
 			{snackbarMessage && (
 				<Snackbar
-					message={snackbarMessage}
-					onClose={() => setSnackbarMessage("")}
+					message={snackbarMessage.text}
+					type={snackbarMessage.type}
+					errors={snackbarMessage.errors}
+					onClose={() => setSnackbarMessage(null)}
 				/>
 			)}
 		</div>
