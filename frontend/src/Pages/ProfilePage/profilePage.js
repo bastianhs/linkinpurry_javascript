@@ -324,7 +324,7 @@ const UserProfile = () => {
 								<div className="relative mb-4">
 									{profilePhoto ? (
 										<img
-											src={profilePhoto}
+											src={`http://localhost:4001/${userData.profile_photo}`}
 											alt="Profile"
 											className="w-32 h-32 rounded-full object-cover shadow-md"
 										/>

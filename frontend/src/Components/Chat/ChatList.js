@@ -100,7 +100,7 @@ const ChatList = ({ chats, activeChat, onSelectChat, user }) => {
 				>
 					{chat.otherUser.profile_photo_path ? (
 						<img
-							src={chat.otherUser.profile_photo_path}
+							src={`http://localhost:4001/${chat.otherUser.profile_photo_path}`}
 							alt={chat.otherUser.username}
 							style={styles.avatar}
 						/>

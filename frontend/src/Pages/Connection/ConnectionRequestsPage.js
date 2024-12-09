@@ -232,7 +232,7 @@ const ConnectionRequestsPage = () => {
 						<div key={request.from.id} style={styles.card}>
 							<div style={styles.profileSection}>
 								<img
-									src={request.from.profile_photo_path}
+									src={`http://localhost:4001/${request.from.profile_photo_path}`}
 									alt={request.from.username}
 									style={styles.avatar}
 								/>

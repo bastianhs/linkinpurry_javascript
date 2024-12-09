@@ -243,7 +243,7 @@ const FeedPage = () => {
 					<div key={feed.id} style={styles.feedCard}>
 						<div style={styles.postHeader}>
 							<img
-								src={feed.user.profile_photo_path || "/default-avatar.png"}
+								src={`http://localhost:4001/${feed.user.profile_photo}`}
 								alt={feed.user.username}
 								style={styles.avatar}
 							/>

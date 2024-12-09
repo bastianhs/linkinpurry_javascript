@@ -120,7 +120,7 @@ const NewChat = ({ connections, onStartChat }) => {
 									>
 										{user.profile_photo_path ? (
 											<img
-												src={user.profile_photo_path}
+												src={`http://localhost:4001/${user.profile_photo_path}`}
 												alt={user.username}
 												style={styles.userAvatar}
 											/>

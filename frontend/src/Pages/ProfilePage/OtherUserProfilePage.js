@@ -357,7 +357,7 @@ const OtherUserProfile = () => {
 				<div style={styles.profileSection}>
 					<div style={styles.avatarSection}>
 						<img
-							src={userData.profile_photo_path}
+							src={`http://localhost:4001/${userData.profile_photo}`}
 							alt={userData.username}
 							style={styles.avatar}
 						/>

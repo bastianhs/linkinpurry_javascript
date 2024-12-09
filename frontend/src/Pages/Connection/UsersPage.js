@@ -245,7 +245,7 @@ const UsersPage = () => {
 							<div style={styles.profileSection}>
 								<div style={styles.avatarContainer}>
 									<img
-										src={user.profile_photo_path}
+										src={`http://localhost:4001/${user.profile_photo_path}`}
 										alt={user.username}
 										style={styles.avatar}
 									/>

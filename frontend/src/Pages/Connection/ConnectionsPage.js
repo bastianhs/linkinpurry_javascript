@@ -262,7 +262,7 @@ const ConnectionsPage = () => {
 					<div key={connection.id} style={styles.card}>
 						<div style={styles.profileSection}>
 							<img
-								src={connection.profile_photo_path}
+								src={`http://localhost:4001/${connection.profile_photo_path}`}
 								alt={connection.username}
 								style={styles.avatar}
 							/>
