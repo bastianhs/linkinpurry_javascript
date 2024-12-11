@@ -1,4 +1,4 @@
-name: Load Testing
+"name: Load Testing
 
 on: [workflow_dispatch]
 
@@ -13,7 +13,7 @@ env:
 jobs:
   push-to-registry:
     name: Push Docker image to Docker Hub
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       packages: write
       contents: read
@@ -46,7 +46,7 @@ jobs:
 
   start-server:
     needs: push-to-registry
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     outputs:
       server-endpoint: ${{ fromJson(steps.httpdeploy.outputs.response).endpoint }}
     steps:
@@ -56,47 +56,39 @@ jobs:
         with:
           url: ${{ env.ORCHESTRATOR_ENDPOINT }}/deploy
           method: POST
-          customHeaders: '{"Authorization": "token ${{ env.ORCHESTRATOR_TOKEN }}"}'
-          data: '{"team": "${{ env.TEAM_NAME }}", "image": "${{ env.DOCKER_IMAGE }}"}'
+          customHeaders: '{""Authorization"": ""token ${{ env.ORCHESTRATOR_TOKEN }}""}'
+          data: '{""team"": ""${{ env.TEAM_NAME }}"", ""image"": ""${{ env.DOCKER_IMAGE }}""}'
 
       - name: Wait for service to be healthy
         run: |
           INTERVAL=5   # Interval between checks in seconds
           RETRIES=36   # Maximum number of retries
-          CHECK_URL="${{ fromJson(steps.httpdeploy.outputs.response).endpoint }}/health"  # URL to check
+          CHECK_URL=""${{ fromJson(steps.httpdeploy.outputs.response).endpoint }}/health""  # URL to check
 
           for ((i=0; i<RETRIES; i++)); do
-            response=$(curl --fail --silent --output /dev/null $CHECK_URL && echo "200" || echo "non-200")
-            if [[ "$response" == "200" ]]; then
-              echo "Service is healthy!"
+            response=$(curl --fail --silent --output /dev/null $CHECK_URL && echo ""200"" || echo ""non-200"")
+            if [[ ""$response"" == ""200"" ]]; then
+              echo ""Service is healthy!""
               exit 0
             fi
-            echo "Health check failed, retrying in $INTERVAL seconds..."
+            echo ""Health check failed, retrying in $INTERVAL seconds...""
             sleep $INTERVAL
           done
 
-          echo "Health check timed out after $RETRIES retries."
+          echo ""Health check timed out after $RETRIES retries.""
           exit 1
 
   load-test-profile:
     needs: start-server
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up load testing tool
-        run: |
-          sudo gpg -k
-          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
-          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-          sudo apt-get update
-          sudo apt-get install -y k6
-
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "20"
+          node-version: ""20""
 
       - name: Install dependencies
         run: npm install
@@ -109,24 +101,17 @@ jobs:
           SERVER_ENDPOINT: ${{ needs.start-server.outputs.server-endpoint }}
 
   load-test-feed:
-    needs: start-server
-    runs-on: ubuntu-latest
+    needs: load-test-profile
+    if: always() && (needs.load-test-profile.result == 'success' || needs.load-test-profile.result == 'failure')
+    runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up load testing tool
-        run: |
-          sudo gpg -k
-          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
-          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-          sudo apt-get update
-          sudo apt-get install -y k6
-
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "20"
+          node-version: ""20""
 
       - name: Install dependencies
         run: npm install
@@ -140,7 +125,7 @@ jobs:
 
   destroy-server:
     needs: [load-test-profile, load-test-feed]
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: always()
     steps:
       - name: Call destroy server from orchestrator
@@ -148,5 +133,5 @@ jobs:
         with:
           url: ${{ env.ORCHESTRATOR_ENDPOINT }}/destroy
           method: DELETE
-          customHeaders: '{"Authorization": "token ${{ env.ORCHESTRATOR_TOKEN }}"}'
-          data: '{"team": "${{ env.TEAM_NAME }}"}'
+          customHeaders: '{""Authorization"": ""token ${{ env.ORCHESTRATOR_TOKEN }}""}'
+          data: '{""team"": ""${{ env.TEAM_NAME }}""}'"
