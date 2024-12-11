@@ -56,26 +56,26 @@ jobs:
         with:
           url: ${{ env.ORCHESTRATOR_ENDPOINT }}/deploy
           method: POST
-          customHeaders: '{""Authorization"": ""token ${{ env.ORCHESTRATOR_TOKEN }}""}'
-          data: '{""team"": ""${{ env.TEAM_NAME }}"", ""image"": ""${{ env.DOCKER_IMAGE }}""}'
+          customHeaders: '{"Authorization": "token ${{ env.ORCHESTRATOR_TOKEN }}"}'
+          data: '{"team": "${{ env.TEAM_NAME }}", "image": "${{ env.DOCKER_IMAGE }}"}'
 
       - name: Wait for service to be healthy
         run: |
           INTERVAL=5   # Interval between checks in seconds
           RETRIES=36   # Maximum number of retries
-          CHECK_URL=""${{ fromJson(steps.httpdeploy.outputs.response).endpoint }}/health""  # URL to check
+          CHECK_URL="${{ fromJson(steps.httpdeploy.outputs.response).endpoint }}/health"  # URL to check
 
           for ((i=0; i<RETRIES; i++)); do
-            response=$(curl --fail --silent --output /dev/null $CHECK_URL && echo ""200"" || echo ""non-200"")
-            if [[ ""$response"" == ""200"" ]]; then
-              echo ""Service is healthy!""
+            response=$(curl --fail --silent --output /dev/null $CHECK_URL && echo "200" || echo "non-200")
+            if [[ "$response" == "200" ]]; then
+              echo "Service is healthy!"
               exit 0
             fi
-            echo ""Health check failed, retrying in $INTERVAL seconds...""
+            echo "Health check failed, retrying in $INTERVAL seconds..."
             sleep $INTERVAL
           done
 
-          echo ""Health check timed out after $RETRIES retries.""
+          echo "Health check timed out after $RETRIES retries."
           exit 1
 
   load-test-profile:
@@ -88,7 +88,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ""20""
+          node-version: "20"
 
       - name: Install dependencies
         run: npm install
@@ -111,7 +111,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ""20""
+          node-version: "20"
 
       - name: Install dependencies
         run: npm install
@@ -133,5 +133,5 @@ jobs:
         with:
           url: ${{ env.ORCHESTRATOR_ENDPOINT }}/destroy
           method: DELETE
-          customHeaders: '{""Authorization"": ""token ${{ env.ORCHESTRATOR_TOKEN }}""}'
-          data: '{""team"": ""${{ env.TEAM_NAME }}""}'
+          customHeaders: '{"Authorization": "token ${{ env.ORCHESTRATOR_TOKEN }}"}'
+          data: '{"team": "${{ env.TEAM_NAME }}"}'
