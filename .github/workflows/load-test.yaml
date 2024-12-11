@@ -1,4 +1,4 @@
-"name: Load Testing
+name: Load Testing
 
 on: [workflow_dispatch]
 
@@ -134,4 +134,4 @@ jobs:
           url: ${{ env.ORCHESTRATOR_ENDPOINT }}/destroy
           method: DELETE
           customHeaders: '{""Authorization"": ""token ${{ env.ORCHESTRATOR_TOKEN }}""}'
-          data: '{""team"": ""${{ env.TEAM_NAME }}""}'"
+          data: '{""team"": ""${{ env.TEAM_NAME }}""}'
